@@ -1,0 +1,57 @@
+# Binários compilados
+blockchain-gui-mac
+blockchain-explorer
+blockchain-gui-linux
+blockchain-gui.exe
+blockchain-backend
+testnet-node
+testnet-explorer
+testnet-monitor
+ordm-node
+ordm-explorer
+ordm-monitor
+node
+*.exe
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Logs e dados temporários
+*.log
+logs/
+backups/
+data/
+wallets/
+
+# Arquivos de desenvolvimento
+.vscode/
+.idea/
+*.tmp
+*.temp
+
+# Arquivos de build
+build/
+dist/
+target/
+
+# Arquivos de backup
+*.backup
+*.bak
+*.old
+
+# Arquivos de configuração local
+.env
+.env.local
+.env.production
+
+# Arquivos de cache
+.cache/
+*.cache
+
+# Arquivos de teste
+test_*
+*_test.go
