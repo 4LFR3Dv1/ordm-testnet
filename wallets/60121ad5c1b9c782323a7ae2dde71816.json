@@ -1,0 +1,25 @@
+{
+  "id": "60121ad5c1b9c782323a7ae2dde71816",
+  "name": "Miner Wallet",
+  "mnemonic": "donate afraid hamster virus drift busy marble alert element there detect kitchen post ripple ship festival burger slot uncover pause liquid casino unfold caught",
+  "seed": null,
+  "accounts": {
+    "74859d358b524c6ed2eedaa6045c39be15137ea1": {
+      "index": 0,
+      "path": "m/44'/0'/0'/0",
+      "address": "74859d358b524c6ed2eedaa6045c39be15137ea1",
+      "public_key": "03944b3a3123ff245af5dd7583476cac74121cd2bd033c3191e5cf7f1c77bad781",
+      "balance": 0,
+      "nonce": 0,
+      "created_at": 1756223941,
+      "last_used": 1756223941,
+      "label": "Default",
+      "is_active": true
+    }
+  },
+  "created_at": 1756223941,
+  "last_used": 1756223941,
+  "version": "1.0.0",
+  "encrypted": false,
+  "file_path": "wallets/60121ad5c1b9c782323a7ae2dde71816.json"
+}

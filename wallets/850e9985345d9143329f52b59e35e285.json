@@ -1,0 +1,25 @@
+{
+  "id": "850e9985345d9143329f52b59e35e285",
+  "name": "Default Wallet",
+  "mnemonic": "ankle crumble pet wheel toward feel space wolf income wash curtain vicious exit infant cover steak layer top design coil old alien spoon world",
+  "seed": null,
+  "accounts": {
+    "21f9d44a974864b8fa085e0e80f5382e3e793f81": {
+      "index": 0,
+      "path": "m/44'/0'/0'/0",
+      "address": "21f9d44a974864b8fa085e0e80f5382e3e793f81",
+      "public_key": "0375cde3b32fba4364eaf3dae8c10fd83ea54e3743e2b47a637ca268892dee139c",
+      "balance": 0,
+      "nonce": 0,
+      "created_at": 1756226758,
+      "last_used": 1756226758,
+      "label": "Default",
+      "is_active": true
+    }
+  },
+  "created_at": 1756226758,
+  "last_used": 1756226758,
+  "version": "1.0.0",
+  "encrypted": false,
+  "file_path": "wallets/850e9985345d9143329f52b59e35e285.json"
+}

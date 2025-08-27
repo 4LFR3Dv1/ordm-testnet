@@ -1,0 +1,26 @@
+{
+  "id": "bdda5b07b47542f8101b7e1823a74541",
+  "name": "wallet_1756233235",
+  "mnemonic": "light medal entire acoustic lamp icon reunion sight summer jewel senior enter where arctic gloom dish vapor youth seed provide paddle trip differ beyond",
+  "passphrase": "default",
+  "seed": null,
+  "accounts": {
+    "7540413879ff3868c4828e78967ec6bb7ac2fe9c": {
+      "index": 0,
+      "path": "m/44'/0'/0'/0",
+      "address": "7540413879ff3868c4828e78967ec6bb7ac2fe9c",
+      "public_key": "0391e1d196cf9442f38fc55d0bf1e091dde167ad73bc959e360b9f5e0994c4ea68",
+      "balance": 0,
+      "nonce": 0,
+      "created_at": 1756233235,
+      "last_used": 1756233235,
+      "label": "Default",
+      "is_active": true
+    }
+  },
+  "created_at": 1756233235,
+  "last_used": 1756233235,
+  "version": "1.0.0",
+  "encrypted": false,
+  "file_path": "wallets/bdda5b07b47542f8101b7e1823a74541.json"
+}

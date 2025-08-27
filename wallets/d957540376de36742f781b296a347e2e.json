@@ -1,0 +1,25 @@
+{
+  "id": "d957540376de36742f781b296a347e2e",
+  "name": "Miner Wallet",
+  "mnemonic": "ensure island credit fever link apple hen increase layer permit kingdom burden banana devote truth story thing tell spike raccoon utility pitch buzz opera",
+  "seed": null,
+  "accounts": {
+    "80a18da2b7906f91a393f45e8569908c099f1dbc": {
+      "index": 0,
+      "path": "m/44'/0'/0'/0",
+      "address": "80a18da2b7906f91a393f45e8569908c099f1dbc",
+      "public_key": "02870f474e8d90f87c43a32b9d2f6873f28bf4a224e24bfa5fe8081425d0dc5b78",
+      "balance": 0,
+      "nonce": 0,
+      "created_at": 1756222020,
+      "last_used": 1756222020,
+      "label": "Default",
+      "is_active": true
+    }
+  },
+  "created_at": 1756222020,
+  "last_used": 1756222020,
+  "version": "1.0.0",
+  "encrypted": false,
+  "file_path": "wallets/d957540376de36742f781b296a347e2e.json"
+}

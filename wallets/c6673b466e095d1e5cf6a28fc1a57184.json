@@ -1,0 +1,26 @@
+{
+  "id": "c6673b466e095d1e5cf6a28fc1a57184",
+  "name": "wallet_1756243703",
+  "mnemonic": "cigar fuel bracket this notice void similar circle enter prepare virus flash hold pottery story explain movie leaf topic love bonus route goat spice",
+  "passphrase": "default",
+  "seed": null,
+  "accounts": {
+    "2488a378ebbc8ed07cb7be0233d8a42eda379064": {
+      "index": 0,
+      "path": "m/44'/0'/0'/0",
+      "address": "2488a378ebbc8ed07cb7be0233d8a42eda379064",
+      "public_key": "02ebfd4993c486cb6331560d33dd7370b400f423d7203cf1c618fa5914f266e688",
+      "balance": 0,
+      "nonce": 0,
+      "created_at": 1756243703,
+      "last_used": 1756243703,
+      "label": "Default",
+      "is_active": true
+    }
+  },
+  "created_at": 1756243703,
+  "last_used": 1756243703,
+  "version": "1.0.0",
+  "encrypted": false,
+  "file_path": "wallets/c6673b466e095d1e5cf6a28fc1a57184.json"
+}

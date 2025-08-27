@@ -1,0 +1,26 @@
+{
+  "id": "82cd6ca12cc4234d3249f50d83f716d9",
+  "name": "wallet_1756245507117118000",
+  "mnemonic": "best general bridge major develop agree sport lounge tragic stamp output topple absorb auto choose vehicle install disagree typical rookie silver amount fox member",
+  "passphrase": "default",
+  "seed": null,
+  "accounts": {
+    "cd53e7f341d2bd5503e9f2e4100012538e48b69d": {
+      "index": 0,
+      "path": "m/44'/0'/0'/0",
+      "address": "cd53e7f341d2bd5503e9f2e4100012538e48b69d",
+      "public_key": "027e75f1ba28292ec7d261456b5c0a1f4d28293eb32e54b26c32eb198c437f75e3",
+      "balance": 0,
+      "nonce": 0,
+      "created_at": 1756245507,
+      "last_used": 1756245507,
+      "label": "Default",
+      "is_active": true
+    }
+  },
+  "created_at": 1756245507,
+  "last_used": 1756245507,
+  "version": "1.0.0",
+  "encrypted": false,
+  "file_path": "wallets/82cd6ca12cc4234d3249f50d83f716d9.json"
+}

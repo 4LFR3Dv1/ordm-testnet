@@ -1,0 +1,49 @@
+services:
+  # Serviço principal da testnet
+  - type: web
+    name: ordm-testnet
+    env: docker
+    region: oregon
+    plan: starter
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: EXPLORER_PORT
+        value: 8080
+      - key: MONITOR_PORT
+        value: 9090
+      - key: NODE_ENV
+        value: production
+    buildCommand: docker build -t ordm-testnet .
+    startCommand: docker run -p $PORT:3000 -p 8080:8080 -p 9090:9090 ordm-testnet
+
+  # Serviço do Explorer (opcional - separado)
+  - type: web
+    name: ordm-explorer
+    env: docker
+    region: oregon
+    plan: starter
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: NODE_ENV
+        value: production
+    buildCommand: docker build -t ordm-explorer --target explorer .
+    startCommand: docker run -p $PORT:8080 ordm-explorer ./ordm-explorer
+
+  # Serviço do Monitor (opcional - separado)
+  - type: web
+    name: ordm-monitor
+    env: docker
+    region: oregon
+    plan: starter
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 9090
+      - key: NODE_ENV
+        value: production
+    buildCommand: docker build -t ordm-monitor --target monitor .
+    startCommand: docker run -p $PORT:9090 ordm-monitor ./ordm-monitor

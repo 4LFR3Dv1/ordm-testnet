@@ -1,0 +1,26 @@
+{
+  "id": "4d5066e65a8908fe7165e9655d6f9afe",
+  "name": "wallet_1756232031",
+  "mnemonic": "miss expose confirm risk nephew deer saddle tennis mosquito erode equip brain auction violin garbage insect parrot faith penalty gather moment whale flat rescue",
+  "passphrase": "default",
+  "seed": null,
+  "accounts": {
+    "ea7e4bc73ad49aecd70221b1a24ec38e7ea9f8ac": {
+      "index": 0,
+      "path": "m/44'/0'/0'/0",
+      "address": "ea7e4bc73ad49aecd70221b1a24ec38e7ea9f8ac",
+      "public_key": "02c45b3978fa71a2d2952ad8a12dbf6f503bbaddbcffed01f8bce8b44ec0aee25e",
+      "balance": 0,
+      "nonce": 0,
+      "created_at": 1756232031,
+      "last_used": 1756232031,
+      "label": "Default",
+      "is_active": true
+    }
+  },
+  "created_at": 1756232031,
+  "last_used": 1756232031,
+  "version": "1.0.0",
+  "encrypted": false,
+  "file_path": "wallets/4d5066e65a8908fe7165e9655d6f9afe.json"
+}
