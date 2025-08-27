@@ -37,10 +37,9 @@ WORKDIR /app
 # Copiar binários compilados
 COPY --from=builder /app/ordm-node /app/ordm-explorer /app/ordm-monitor ./
 
-# Copiar arquivos estáticos
+# Copiar arquivos estáticos (apenas os que existem)
 COPY --from=builder /app/cmd/gui/login_interface.html ./
-COPY --from=builder /app/cmd/explorer/explorer.html ./
-COPY --from=builder /app/cmd/monitor/monitor.html ./
+COPY --from=builder /app/cmd/monitor/dashboard.html ./
 
 # Copiar script de inicialização
 COPY scripts/start.sh ./
