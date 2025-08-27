@@ -264,7 +264,7 @@ func handleStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	stats := GetMiningStats()
-	
+
 	response := map[string]interface{}{
 		"miner_id":     offlineMiner.Identity.MinerID,
 		"is_mining":    miningTicker != nil,
@@ -385,7 +385,7 @@ func handleGetBlocks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	blocks := []map[string]interface{}{}
-	
+
 	offlineMiner.LocalChain.mu.RLock()
 	for _, block := range offlineMiner.LocalChain.Blocks {
 		blocks = append(blocks, block.GetBlockInfo())
@@ -411,10 +411,10 @@ func handleSync(w http.ResponseWriter, r *http.Request) {
 	// Por enquanto, apenas simular sincronização
 	// Na Fase 3, será implementada a sincronização real
 	offlineMiner.SyncManager.Status = "syncing"
-	
+
 	// Simular delay de sincronização
 	time.Sleep(2 * time.Second)
-	
+
 	offlineMiner.SyncManager.Status = "connected"
 	offlineMiner.SyncManager.LastSync = time.Now()
 
@@ -436,7 +436,7 @@ func handleStats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	stats := GetMiningStats()
-	
+
 	response := map[string]interface{}{
 		"total_blocks":   stats.TotalBlocks,
 		"valid_blocks":   stats.ValidBlocks,
