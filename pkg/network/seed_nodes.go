@@ -42,29 +42,35 @@ func NewSeedNodeManager() *SeedNodeManager {
 
 // initializeLocalNodes inicializa apenas nodes locais para produção
 func (snm *SeedNodeManager) initializeLocalNodes() {
-	log.Println("🌱 Inicializando seed nodes locais para produção...")
+	log.Println("🌱 Inicializando seed nodes para produção (Render)...")
 	
-	// Node local principal
-	snm.Nodes["local-main"] = &SeedNode{
-		ID:       "local-main",
-		Name:     "Local Main Node",
-		IP:       "localhost",
-		Port:     3000,
+	// Obter porta do ambiente Render
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+	
+	// Node principal (porta do Render)
+	snm.Nodes["render-main"] = &SeedNode{
+		ID:       "render-main",
+		Name:     "Render Main Node",
+		IP:       "0.0.0.0", // Aceitar conexões de qualquer IP
+		Port:     3000,      // Porta interna do container
 		Status:   "active",
 		LastSeen: time.Now().Format("2006-01-02 15:04:05"),
 	}
 	
-	// Node local secundário
-	snm.Nodes["local-secondary"] = &SeedNode{
-		ID:       "local-secondary",
-		Name:     "Local Secondary Node",
-		IP:       "localhost",
-		Port:     3001,
+	// Node secundário (porta alternativa)
+	snm.Nodes["render-secondary"] = &SeedNode{
+		ID:       "render-secondary",
+		Name:     "Render Secondary Node",
+		IP:       "0.0.0.0",
+		Port:     8080,      // Porta alternativa
 		Status:   "active",
 		LastSeen: time.Now().Format("2006-01-02 15:04:05"),
 	}
 	
-	log.Printf("✅ %d seed nodes locais inicializados", len(snm.Nodes))
+	log.Printf("✅ %d seed nodes de produção inicializados na porta %s", len(snm.Nodes), port)
 }
 
 // initializeExternalNodes inicializa seed nodes externos para desenvolvimento

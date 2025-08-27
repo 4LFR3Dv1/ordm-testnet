@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -125,41 +126,65 @@ func (tfa *TwoFactorAuth) Logout() {
 	tfa.SessionToken = ""
 }
 
-func loadMiningState() MiningStats {
-	// Tentar carregar estado persistente
-	miningStatePath := "data/mining_state.json"
-	if _, err := os.Stat(miningStatePath); err == nil {
-		data, err := os.ReadFile(miningStatePath)
-		if err == nil {
-			var stats MiningStats
-			if json.Unmarshal(data, &stats) == nil {
-				fmt.Printf("📊 Estado de mineração carregado: %d blocos minerados\n", stats.TotalBlocks)
-				return stats
-			}
-		}
+// loadMiningState carrega o estado de mineração
+func loadMiningState() (int, error) {
+	// Em produção, usar diretório temporário
+	dataPath := "./data"
+	if os.Getenv("NODE_ENV") == "production" {
+		dataPath = "/tmp/ordm-data"
 	}
-
-	// Retornar estado padrão se não conseguir carregar
-	return MiningStats{
-		TotalBlocks:    0,
-		TotalRewards:   0,
-		EnergyCost:     0.0,
-		Profitability:  0.0,
-		HashRate:       0.0,
-		Uptime:         0,
-		StakeAmount:    0,
-		ValidatorLevel: "Iniciante",
+	
+	// Criar diretório se não existir
+	os.MkdirAll(dataPath, 0755)
+	
+	filePath := filepath.Join(dataPath, "mining_state.json")
+	
+	// Se o arquivo não existir, retornar 0
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return 0, nil
 	}
+	
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return 0, err
+	}
+	
+	var state struct {
+		BlocksMined int `json:"blocks_mined"`
+	}
+	
+	if err := json.Unmarshal(data, &state); err != nil {
+		return 0, err
+	}
+	
+	return state.BlocksMined, nil
 }
 
-func saveMiningState() {
-	// Salvar estado de mineração no arquivo
-	miningStatePath := "data/mining_state.json"
-	data, err := json.MarshalIndent(gui.Node.MiningStats, "", "  ")
-	if err == nil {
-		os.MkdirAll("data", 0755)
-		os.WriteFile(miningStatePath, data, 0644)
+// saveMiningState salva o estado de mineração
+func saveMiningState(blocksMined int) error {
+	// Em produção, usar diretório temporário
+	dataPath := "./data"
+	if os.Getenv("NODE_ENV") == "production" {
+		dataPath = "/tmp/ordm-data"
 	}
+	
+	// Criar diretório se não existir
+	os.MkdirAll(dataPath, 0755)
+	
+	filePath := filepath.Join(dataPath, "mining_state.json")
+	
+	state := struct {
+		BlocksMined int `json:"blocks_mined"`
+	}{
+		BlocksMined: blocksMined,
+	}
+	
+	data, err := json.MarshalIndent(state, "", "  ")
+	if err != nil {
+		return err
+	}
+	
+	return os.WriteFile(filePath, data, 0644)
 }
 
 func loadExistingWallets() {
@@ -894,7 +919,7 @@ func startMiningProcess() {
 						blockNumber, hash, time.Now().Unix(), reward, gui.Node.Balance[gui.Node.WalletAddress]))
 
 					// Salvar estado de mineração após cada bloco
-					saveMiningState()
+					saveMiningState(int(gui.Node.MiningStats.TotalBlocks))
 
 					blockNumber++
 				}
@@ -940,7 +965,12 @@ func startRealTimeUpdates() {
 
 func main() {
 	// Inicializar gerenciador de usuários
-	userManager := auth.NewUserManager("./data")
+	// Em produção, usar diretório temporário
+	dataPath := "./data"
+	if os.Getenv("NODE_ENV") == "production" {
+		dataPath = "/tmp/ordm-data"
+	}
+	userManager := auth.NewUserManager(dataPath)
 
 	// Inicializar wallet manager
 	walletManager := wallet.NewWalletManager("./wallets")
@@ -963,7 +993,10 @@ func main() {
 	testnetEndpoints := api.NewTestnetEndpoints()
 
 	// Carregar estado de mineração se existir
-	miningState := loadMiningState()
+	miningState, err := loadMiningState()
+	if err != nil {
+		fmt.Printf("Aviso: Erro ao carregar estado de mineração: %v\n", err)
+	}
 
 	// Configurar node minerador individual
 	gui = BlockchainGUI{
@@ -973,7 +1006,7 @@ func main() {
 			Status:        "Parado",
 			IsRunning:     false,
 			IsMining:      false,
-			MiningStats:   miningState,
+			MiningStats:   MiningStats{TotalBlocks: int64(miningState)},
 			Balance:       make(map[string]int64),
 			Peers:         []string{"8081", "8082", "8083"},
 			Difficulty:    1,

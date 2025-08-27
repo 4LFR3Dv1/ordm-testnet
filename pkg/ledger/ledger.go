@@ -65,38 +65,36 @@ func NewGlobalLedger(dataPath string, walletManager interface{}) *GlobalLedger {
 	}
 }
 
-// LoadLedger carrega o ledger do disco
+// LoadLedger carrega o ledger do arquivo
 func (gl *GlobalLedger) LoadLedger() error {
-	ledgerPath := filepath.Join(gl.DataPath, "global_ledger.json")
-	data, err := os.ReadFile(ledgerPath)
+	// Em produção, usar diretório temporário
+	dataPath := "./data"
+	if os.Getenv("NODE_ENV") == "production" {
+		dataPath = "/tmp/ordm-data"
+	}
+	
+	// Criar diretório se não existir
+	os.MkdirAll(dataPath, 0755)
+	
+	filePath := filepath.Join(dataPath, "global_ledger.json")
+	
+	// Se o arquivo não existir, criar um novo
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		gl.Balances = make(map[string]int64)
+		gl.TotalSupply = 0
+		gl.Movements = []TokenMovement{}
+		gl.Generations = []TokenGeneration{}
+		return gl.SaveLedger()
+	}
+	
+	file, err := os.Open(filePath)
 	if err != nil {
-		if os.IsNotExist(err) {
-			// Criar ledger vazio se não existir
-			return gl.createEmptyLedger()
-		}
-		return fmt.Errorf("erro ao ler ledger: %v", err)
+		return err
 	}
-
-	var ledgerData struct {
-		Balances    map[string]int64  `json:"balances"`
-		Movements   []TokenMovement   `json:"movements"`
-		Generations []TokenGeneration `json:"generations"`
-		TotalSupply int64             `json:"total_supply"`
-	}
-
-	err = json.Unmarshal(data, &ledgerData)
-	if err != nil {
-		return fmt.Errorf("erro ao decodificar ledger: %v", err)
-	}
-
-	gl.Mutex.Lock()
-	gl.Balances = ledgerData.Balances
-	gl.Movements = ledgerData.Movements
-	gl.Generations = ledgerData.Generations
-	gl.TotalSupply = ledgerData.TotalSupply
-	gl.Mutex.Unlock()
-
-	return nil
+	defer file.Close()
+	
+	decoder := json.NewDecoder(file)
+	return decoder.Decode(gl)
 }
 
 // createEmptyLedger cria um ledger vazio sem usar locks
@@ -133,50 +131,28 @@ func (gl *GlobalLedger) createEmptyLedger() error {
 	return nil
 }
 
-// SaveLedger salva o ledger no disco
+// SaveLedger salva o ledger no arquivo
 func (gl *GlobalLedger) SaveLedger() error {
-	gl.Mutex.RLock()
-
-	// Criar uma cópia dos dados para evitar deadlock
-	ledgerData := struct {
-		Balances    map[string]int64  `json:"balances"`
-		Movements   []TokenMovement   `json:"movements"`
-		Generations []TokenGeneration `json:"generations"`
-		TotalSupply int64             `json:"total_supply"`
-	}{
-		Balances:    make(map[string]int64),
-		Movements:   make([]TokenMovement, len(gl.Movements)),
-		Generations: make([]TokenGeneration, len(gl.Generations)),
-		TotalSupply: gl.TotalSupply,
+	// Em produção, usar diretório temporário
+	dataPath := "./data"
+	if os.Getenv("NODE_ENV") == "production" {
+		dataPath = "/tmp/ordm-data"
 	}
-
-	// Copiar dados
-	for k, v := range gl.Balances {
-		ledgerData.Balances[k] = v
-	}
-	copy(ledgerData.Movements, gl.Movements)
-	copy(ledgerData.Generations, gl.Generations)
-
-	gl.Mutex.RUnlock()
-
+	
 	// Criar diretório se não existir
-	err := os.MkdirAll(gl.DataPath, 0755)
+	os.MkdirAll(dataPath, 0755)
+	
+	filePath := filepath.Join(dataPath, "global_ledger.json")
+	
+	file, err := os.Create(filePath)
 	if err != nil {
-		return fmt.Errorf("erro ao criar diretório: %v", err)
+		return err
 	}
-
-	data, err := json.MarshalIndent(ledgerData, "", "  ")
-	if err != nil {
-		return fmt.Errorf("erro ao codificar ledger: %v", err)
-	}
-
-	ledgerPath := filepath.Join(gl.DataPath, "global_ledger.json")
-	err = os.WriteFile(ledgerPath, data, 0644)
-	if err != nil {
-		return fmt.Errorf("erro ao salvar ledger: %v", err)
-	}
-
-	return nil
+	defer file.Close()
+	
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+	return encoder.Encode(gl)
 }
 
 // GetBalance retorna o saldo de um endereço
