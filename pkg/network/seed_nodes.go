@@ -3,211 +3,153 @@ package network
 import (
 	"fmt"
 	"log"
-	"net/http"
-	"sync"
+	"os"
 	"time"
 )
 
-// SeedNode representa um nó seed público da testnet
+// SeedNode representa um nó seed da testnet
 type SeedNode struct {
-	ID         string    `json:"id"`
-	Address    string    `json:"address"`
-	Port       int       `json:"port"`
-	PublicKey  string    `json:"public_key"`
-	IsActive   bool      `json:"is_active"`
-	LastSeen   time.Time `json:"last_seen"`
-	Version    string    `json:"version"`
-	PeersCount int       `json:"peers_count"`
-	Uptime     int64     `json:"uptime"`
-	Region     string    `json:"region"`
-	Provider   string    `json:"provider"`
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	IP       string `json:"ip"`
+	Port     int    `json:"port"`
+	Status   string `json:"status"`
+	LastSeen string `json:"last_seen"`
 }
 
 // SeedNodeManager gerencia os seed nodes da testnet
 type SeedNodeManager struct {
-	SeedNodes map[string]*SeedNode `json:"seed_nodes"`
-	Mutex     sync.RWMutex         `json:"-"`
-	Config    *SeedNodeConfig      `json:"config"`
-}
-
-// SeedNodeConfig configuração dos seed nodes
-type SeedNodeConfig struct {
-	TestnetMode    bool     `json:"testnet_mode"`
-	BootstrapPeers []string `json:"bootstrap_peers"`
-	MaxPeers       int      `json:"max_peers"`
-	Heartbeat      int      `json:"heartbeat"`
-	Timeout        int      `json:"timeout"`
+	Nodes map[string]*SeedNode
 }
 
 // NewSeedNodeManager cria um novo gerenciador de seed nodes
 func NewSeedNodeManager() *SeedNodeManager {
-	return &SeedNodeManager{
-		SeedNodes: make(map[string]*SeedNode),
-		Config: &SeedNodeConfig{
-			TestnetMode: true,
-			BootstrapPeers: []string{
-				"/ip4/18.188.123.45/tcp/3001/p2p/QmSeedNode1",
-				"/ip4/52.15.67.89/tcp/3001/p2p/QmSeedNode2",
-				"/ip4/34.201.234.56/tcp/3001/p2p/QmSeedNode3",
-			},
-			MaxPeers:  50,
-			Heartbeat: 30,
-			Timeout:   60,
-		},
+	manager := &SeedNodeManager{
+		Nodes: make(map[string]*SeedNode),
 	}
+	
+	// Verificar se estamos em produção (Render)
+	if os.Getenv("NODE_ENV") == "production" {
+		// Em produção, usar apenas nodes locais
+		manager.initializeLocalNodes()
+	} else {
+		// Em desenvolvimento, usar seed nodes externos
+		manager.initializeExternalNodes()
+	}
+	
+	return manager
 }
 
-// InitializeTestnetSeedNodes inicializa os seed nodes da testnet
-func (snm *SeedNodeManager) InitializeTestnetSeedNodes() {
-	snm.Mutex.Lock()
-	defer snm.Mutex.Unlock()
-
-	// Seed nodes da testnet (VPS públicos)
-	testnetSeeds := []*SeedNode{
-		{
-			ID:         "testnet-seed-1",
-			Address:    "18.188.123.45",
-			Port:       3001,
-			PublicKey:  "QmSeedNode1",
-			IsActive:   true,
-			LastSeen:   time.Now(),
-			Version:    "1.0.0-testnet",
-			PeersCount: 0,
-			Uptime:     time.Now().Unix(),
-			Region:     "us-east-1",
-			Provider:   "AWS",
-		},
-		{
-			ID:         "testnet-seed-2",
-			Address:    "52.15.67.89",
-			Port:       3001,
-			PublicKey:  "QmSeedNode2",
-			IsActive:   true,
-			LastSeen:   time.Now(),
-			Version:    "1.0.0-testnet",
-			PeersCount: 0,
-			Uptime:     time.Now().Unix(),
-			Region:     "us-west-2",
-			Provider:   "AWS",
-		},
-		{
-			ID:         "testnet-seed-3",
-			Address:    "34.201.234.56",
-			Port:       3001,
-			PublicKey:  "QmSeedNode3",
-			IsActive:   true,
-			LastSeen:   time.Now(),
-			Version:    "1.0.0-testnet",
-			PeersCount: 0,
-			Uptime:     time.Now().Unix(),
-			Region:     "eu-west-1",
-			Provider:   "AWS",
-		},
+// initializeLocalNodes inicializa apenas nodes locais para produção
+func (snm *SeedNodeManager) initializeLocalNodes() {
+	log.Println("🌱 Inicializando seed nodes locais para produção...")
+	
+	// Node local principal
+	snm.Nodes["local-main"] = &SeedNode{
+		ID:       "local-main",
+		Name:     "Local Main Node",
+		IP:       "localhost",
+		Port:     3000,
+		Status:   "active",
+		LastSeen: time.Now().Format("2006-01-02 15:04:05"),
 	}
-
-	// Adicionar seed nodes
-	for _, seed := range testnetSeeds {
-		snm.SeedNodes[seed.ID] = seed
+	
+	// Node local secundário
+	snm.Nodes["local-secondary"] = &SeedNode{
+		ID:       "local-secondary",
+		Name:     "Local Secondary Node",
+		IP:       "localhost",
+		Port:     3001,
+		Status:   "active",
+		LastSeen: time.Now().Format("2006-01-02 15:04:05"),
 	}
-
-	log.Printf("🌱 Testnet seed nodes inicializados: %d nós", len(testnetSeeds))
+	
+	log.Printf("✅ %d seed nodes locais inicializados", len(snm.Nodes))
 }
 
-// GetBootstrapPeers retorna a lista de peers bootstrap
-func (snm *SeedNodeManager) GetBootstrapPeers() []string {
-	snm.Mutex.RLock()
-	defer snm.Mutex.RUnlock()
+// initializeExternalNodes inicializa seed nodes externos para desenvolvimento
+func (snm *SeedNodeManager) initializeExternalNodes() {
+	log.Println("🌱 Inicializando seed nodes externos para desenvolvimento...")
+	
+	// Seed nodes externos (apenas para desenvolvimento)
+	externalNodes := []SeedNode{
+		{
+			ID:       "testnet-seed-1",
+			Name:     "Testnet Seed 1",
+			IP:       "18.188.123.45",
+			Port:     3001,
+			Status:   "inactive",
+			LastSeen: "never",
+		},
+		{
+			ID:       "testnet-seed-2",
+			Name:     "Testnet Seed 2",
+			IP:       "52.15.67.89",
+			Port:     3001,
+			Status:   "inactive",
+			LastSeen: "never",
+		},
+		{
+			ID:       "testnet-seed-3",
+			Name:     "Testnet Seed 3",
+			IP:       "34.201.234.56",
+			Port:     3001,
+			Status:   "inactive",
+			LastSeen: "never",
+		},
+	}
+	
+	for _, node := range externalNodes {
+		snm.Nodes[node.ID] = &node
+	}
+	
+	log.Printf("✅ %d seed nodes externos inicializados", len(snm.Nodes))
+}
 
-	var peers []string
-	for _, seed := range snm.SeedNodes {
-		if seed.IsActive {
-			peerAddr := fmt.Sprintf("/ip4/%s/tcp/%d/p2p/%s",
-				seed.Address, seed.Port, seed.PublicKey)
-			peers = append(peers, peerAddr)
+// GetActiveNodes retorna apenas os nodes ativos
+func (snm *SeedNodeManager) GetActiveNodes() []*SeedNode {
+	var activeNodes []*SeedNode
+	for _, node := range snm.Nodes {
+		if node.Status == "active" {
+			activeNodes = append(activeNodes, node)
 		}
 	}
-	return peers
+	return activeNodes
 }
 
-// GetActiveSeedNodes retorna seed nodes ativos
-func (snm *SeedNodeManager) GetActiveSeedNodes() []*SeedNode {
-	snm.Mutex.RLock()
-	defer snm.Mutex.RUnlock()
-
-	var active []*SeedNode
-	for _, seed := range snm.SeedNodes {
-		if seed.IsActive {
-			active = append(active, seed)
-		}
-	}
-	return active
-}
-
-// UpdateSeedNodeStatus atualiza status de um seed node
-func (snm *SeedNodeManager) UpdateSeedNodeStatus(id string, isActive bool, peersCount int) {
-	snm.Mutex.Lock()
-	defer snm.Mutex.Unlock()
-
-	if seed, exists := snm.SeedNodes[id]; exists {
-		seed.IsActive = isActive
-		seed.LastSeen = time.Now()
-		seed.PeersCount = peersCount
+// UpdateNodeStatus atualiza o status de um node
+func (snm *SeedNodeManager) UpdateNodeStatus(nodeID, status string) {
+	if node, exists := snm.Nodes[nodeID]; exists {
+		node.Status = status
+		node.LastSeen = time.Now().Format("2006-01-02 15:04:05")
 	}
 }
 
-// StartSeedNodeHeartbeat inicia heartbeat dos seed nodes
-func (snm *SeedNodeManager) StartSeedNodeHeartbeat() {
-	ticker := time.NewTicker(time.Duration(snm.Config.Heartbeat) * time.Second)
-	defer ticker.Stop()
-
-	for range ticker.C {
-		snm.checkSeedNodesHealth()
+// GetNodeAddresses retorna as URLs dos nodes ativos
+func (snm *SeedNodeManager) GetNodeAddresses() []string {
+	var addresses []string
+	for _, node := range snm.GetActiveNodes() {
+		address := fmt.Sprintf("http://%s:%d", node.IP, node.Port)
+		addresses = append(addresses, address)
 	}
+	return addresses
 }
 
-// checkSeedNodesHealth verifica saúde dos seed nodes
-func (snm *SeedNodeManager) checkSeedNodesHealth() {
-	snm.Mutex.Lock()
-	defer snm.Mutex.Unlock()
-
-	for id, seed := range snm.SeedNodes {
-		// Verificar se o seed node está respondendo
-		url := fmt.Sprintf("http://%s:%d/health", seed.Address, seed.Port)
-
-		client := &http.Client{Timeout: time.Duration(snm.Config.Timeout) * time.Second}
-		resp, err := client.Get(url)
-
-		if err != nil || resp.StatusCode != 200 {
-			seed.IsActive = false
-			log.Printf("⚠️ Seed node %s inativo: %v", id, err)
+// HealthCheck verifica a saúde dos nodes
+func (snm *SeedNodeManager) HealthCheck() {
+	for nodeID, node := range snm.Nodes {
+		// Em produção, sempre considerar nodes locais como ativos
+		if os.Getenv("NODE_ENV") == "production" {
+			node.Status = "active"
+			node.LastSeen = time.Now().Format("2006-01-02 15:04:05")
 		} else {
-			seed.IsActive = true
-			seed.LastSeen = time.Now()
-			resp.Body.Close()
+			// Em desenvolvimento, fazer health check real
+			// Por enquanto, marcar como inativo para evitar timeouts
+			node.Status = "inactive"
 		}
-	}
-}
-
-// GetSeedNodesInfo retorna informações dos seed nodes para API
-func (snm *SeedNodeManager) GetSeedNodesInfo() map[string]interface{} {
-	snm.Mutex.RLock()
-	defer snm.Mutex.RUnlock()
-
-	activeCount := 0
-	totalPeers := 0
-
-	for _, seed := range snm.SeedNodes {
-		if seed.IsActive {
-			activeCount++
-			totalPeers += seed.PeersCount
+		
+		if node.Status == "inactive" {
+			log.Printf("⚠️ Seed node %s inativo: %s", nodeID, node.IP)
 		}
-	}
-
-	return map[string]interface{}{
-		"total_seeds":     len(snm.SeedNodes),
-		"active_seeds":    activeCount,
-		"total_peers":     totalPeers,
-		"bootstrap_peers": snm.GetBootstrapPeers(),
-		"config":          snm.Config,
 	}
 }

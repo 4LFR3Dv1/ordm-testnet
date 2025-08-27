@@ -36,21 +36,29 @@ type UserManager struct {
 }
 
 func NewUserManager(dataPath string) *UserManager {
-	manager := &UserManager{
+	// Em produção (Render), usar diretório temporário
+	if os.Getenv("NODE_ENV") == "production" {
+		dataPath = "/tmp/ordm-data"
+	}
+	
+	// Criar diretório se não existir
+	os.MkdirAll(dataPath, 0755)
+	
+	um := &UserManager{
 		Users:       make(map[string]*User),
 		WalletAuths: make(map[string]*WalletAuth),
 		FilePath:    filepath.Join(dataPath, "users.json"),
 	}
-
-	// Carregar usuários existentes
-	manager.LoadUsers()
-
+	
+	// Carregar dados existentes
+	um.LoadUsers()
+	
 	// Criar usuário padrão se não existir
-	if len(manager.Users) == 0 {
-		manager.CreateDefaultUser()
+	if len(um.Users) == 0 {
+		um.CreateDefaultUser()
 	}
-
-	return manager
+	
+	return um
 }
 
 func (um *UserManager) CreateDefaultUser() {

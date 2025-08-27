@@ -8,6 +8,13 @@ export PORT=${PORT:-3000}
 export EXPLORER_PORT=${EXPLORER_PORT:-8080}
 export MONITOR_PORT=${MONITOR_PORT:-9090}
 
+# Em produção (Render), usar apenas a porta principal
+if [ "$NODE_ENV" = "production" ]; then
+    echo "🏭 Modo produção detectado - usando porta única: $PORT"
+    export EXPLORER_PORT=$PORT
+    export MONITOR_PORT=$PORT
+fi
+
 # Criar diretórios se não existirem
 mkdir -p /app/data /app/logs /app/backups /app/wallets
 
@@ -43,14 +50,18 @@ if ! start_service "Node" "./ordm-node" $PORT; then
     exit 1
 fi
 
-# Iniciar Explorer
-if ! start_service "Explorer" "./ordm-explorer" $EXPLORER_PORT; then
-    echo "⚠️ Explorer falhou, mas continuando..."
-fi
+# Em produção, integrar Explorer e Monitor no Node principal
+if [ "$NODE_ENV" = "production" ]; then
+    echo "🏭 Modo produção - Explorer e Monitor integrados no Node"
+else
+    # Em desenvolvimento, iniciar serviços separados
+    if ! start_service "Explorer" "./ordm-explorer" $EXPLORER_PORT; then
+        echo "⚠️ Explorer falhou, mas continuando..."
+    fi
 
-# Iniciar Monitor
-if ! start_service "Monitor" "./ordm-monitor" $MONITOR_PORT; then
-    echo "⚠️ Monitor falhou, mas continuando..."
+    if ! start_service "Monitor" "./ordm-monitor" $MONITOR_PORT; then
+        echo "⚠️ Monitor falhou, mas continuando..."
+    fi
 fi
 
 echo "🎉 ORDM Testnet iniciada com sucesso!"
