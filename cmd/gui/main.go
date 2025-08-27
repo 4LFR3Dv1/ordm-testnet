@@ -130,33 +130,33 @@ func (tfa *TwoFactorAuth) Logout() {
 func loadMiningState() (int, error) {
 	// Em produção, usar diretório temporário
 	dataPath := "./data"
-	if os.Getenv("NODE_ENV") == "production" {
+	if os.Getenv("PORT") != "" || os.Getenv("NODE_ENV") == "production" {
 		dataPath = "/tmp/ordm-data"
 	}
-	
+
 	// Criar diretório se não existir
 	os.MkdirAll(dataPath, 0755)
-	
+
 	filePath := filepath.Join(dataPath, "mining_state.json")
-	
+
 	// Se o arquivo não existir, retornar 0
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return 0, nil
 	}
-	
+
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return 0, err
 	}
-	
+
 	var state struct {
 		BlocksMined int `json:"blocks_mined"`
 	}
-	
+
 	if err := json.Unmarshal(data, &state); err != nil {
 		return 0, err
 	}
-	
+
 	return state.BlocksMined, nil
 }
 
@@ -164,26 +164,26 @@ func loadMiningState() (int, error) {
 func saveMiningState(blocksMined int) error {
 	// Em produção, usar diretório temporário
 	dataPath := "./data"
-	if os.Getenv("NODE_ENV") == "production" {
+	if os.Getenv("PORT") != "" || os.Getenv("NODE_ENV") == "production" {
 		dataPath = "/tmp/ordm-data"
 	}
-	
+
 	// Criar diretório se não existir
 	os.MkdirAll(dataPath, 0755)
-	
+
 	filePath := filepath.Join(dataPath, "mining_state.json")
-	
+
 	state := struct {
 		BlocksMined int `json:"blocks_mined"`
 	}{
 		BlocksMined: blocksMined,
 	}
-	
+
 	data, err := json.MarshalIndent(state, "", "  ")
 	if err != nil {
 		return err
 	}
-	
+
 	return os.WriteFile(filePath, data, 0644)
 }
 
@@ -589,9 +589,20 @@ func handleAdvancedLogin(w http.ResponseWriter, r *http.Request) {
 	// Tentar fazer login na wallet
 	walletAuth, err := gui.UserManager.LoginWallet(publicKey, pin)
 	if err != nil {
-		fmt.Printf("❌ Login falhou: %s\n", err.Error())
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
+		// Se a wallet não existe, criar uma nova
+		if err.Error() == "wallet não encontrada" {
+			fmt.Printf("🔑 Wallet não encontrada, criando nova wallet: %s\n", publicKey)
+			walletAuth, err = gui.UserManager.CreateWalletAuth(publicKey, pin)
+			if err != nil {
+				fmt.Printf("❌ Erro ao criar wallet: %s\n", err.Error())
+				http.Redirect(w, r, "/", http.StatusSeeOther)
+				return
+			}
+		} else {
+			fmt.Printf("❌ Login falhou: %s\n", err.Error())
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
 	}
 
 	// Login bem-sucedido
@@ -967,7 +978,7 @@ func main() {
 	// Inicializar gerenciador de usuários
 	// Em produção, usar diretório temporário
 	dataPath := "./data"
-	if os.Getenv("NODE_ENV") == "production" {
+	if os.Getenv("PORT") != "" || os.Getenv("NODE_ENV") == "production" {
 		dataPath = "/tmp/ordm-data"
 	}
 	userManager := auth.NewUserManager(dataPath)

@@ -69,15 +69,15 @@ func NewGlobalLedger(dataPath string, walletManager interface{}) *GlobalLedger {
 func (gl *GlobalLedger) LoadLedger() error {
 	// Em produção, usar diretório temporário
 	dataPath := "./data"
-	if os.Getenv("NODE_ENV") == "production" {
+	if os.Getenv("PORT") != "" || os.Getenv("NODE_ENV") == "production" {
 		dataPath = "/tmp/ordm-data"
 	}
-	
+
 	// Criar diretório se não existir
 	os.MkdirAll(dataPath, 0755)
-	
+
 	filePath := filepath.Join(dataPath, "global_ledger.json")
-	
+
 	// Se o arquivo não existir, criar um novo
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		gl.Balances = make(map[string]int64)
@@ -86,13 +86,13 @@ func (gl *GlobalLedger) LoadLedger() error {
 		gl.Generations = []TokenGeneration{}
 		return gl.SaveLedger()
 	}
-	
+
 	file, err := os.Open(filePath)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	
+
 	decoder := json.NewDecoder(file)
 	return decoder.Decode(gl)
 }
@@ -135,21 +135,21 @@ func (gl *GlobalLedger) createEmptyLedger() error {
 func (gl *GlobalLedger) SaveLedger() error {
 	// Em produção, usar diretório temporário
 	dataPath := "./data"
-	if os.Getenv("NODE_ENV") == "production" {
+	if os.Getenv("PORT") != "" || os.Getenv("NODE_ENV") == "production" {
 		dataPath = "/tmp/ordm-data"
 	}
-	
+
 	// Criar diretório se não existir
 	os.MkdirAll(dataPath, 0755)
-	
+
 	filePath := filepath.Join(dataPath, "global_ledger.json")
-	
+
 	file, err := os.Create(filePath)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	
+
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(gl)

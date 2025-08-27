@@ -37,7 +37,7 @@ type UserManager struct {
 
 func NewUserManager(dataPath string) *UserManager {
 	// Em produção (Render), usar diretório temporário
-	if os.Getenv("NODE_ENV") == "production" {
+	if os.Getenv("PORT") != "" || os.Getenv("NODE_ENV") == "production" {
 		dataPath = "/tmp/ordm-data"
 	}
 	

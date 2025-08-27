@@ -29,7 +29,8 @@ func NewSeedNodeManager() *SeedNodeManager {
 	}
 	
 	// Verificar se estamos em produção (Render)
-	if os.Getenv("NODE_ENV") == "production" {
+	// Render define PORT automaticamente, então usamos isso como indicador
+	if os.Getenv("PORT") != "" || os.Getenv("NODE_ENV") == "production" {
 		// Em produção, usar apenas nodes locais
 		manager.initializeLocalNodes()
 	} else {
