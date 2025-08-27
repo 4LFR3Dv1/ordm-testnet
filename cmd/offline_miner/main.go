@@ -212,7 +212,17 @@ func (lc *LocalBlockchain) CreateGenesisBlock() {
 		Status:    "confirmed",
 	}
 	
-	genesis.AddTransaction(genesisTx)
+	// Converter para Transaction (tipo esperado pelo AddTransaction)
+	genesisTransaction := blockchain.Transaction{
+		ID:        genesisTx.ID,
+		From:      genesisTx.From,
+		To:        genesisTx.To,
+		Amount:    genesisTx.Amount,
+		Fee:       genesisTx.Fee,
+		Data:      genesisTx.Data,
+	}
+	
+	genesis.AddTransaction(genesisTransaction)
 	
 	// Salvar bloco genesis
 	lc.Blocks[genesis.GetBlockHashString()] = genesis
@@ -246,7 +256,16 @@ func (lc *LocalBlockchain) MineNextBlock(minerID string) (*blockchain.RealBlock,
 	
 	// Adicionar transações pendentes
 	for _, tx := range lc.PendingTxs {
-		block.AddTransaction(tx)
+		// Converter para Transaction (tipo esperado pelo AddTransaction)
+		transaction := blockchain.Transaction{
+			ID:     tx.ID,
+			From:   tx.From,
+			To:     tx.To,
+			Amount: tx.Amount,
+			Fee:    tx.Fee,
+			Data:   tx.Data,
+		}
+		block.AddTransaction(transaction)
 	}
 	
 	// Minerar o bloco
