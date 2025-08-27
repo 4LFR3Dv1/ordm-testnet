@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -59,13 +58,13 @@ type TwoFactorAuth struct {
 }
 
 type BlockchainGUI struct {
-	Node          NodeInfo              `json:"node"`
-	Logs          []string              `json:"logs"`
-	IsRunning     bool                  `json:"is_running"`
-	WalletManager *wallet.WalletManager `json:"-"`
-	GlobalLedger  *ledger.GlobalLedger  `json:"-"`
-	TwoFactorAuth *TwoFactorAuth        `json:"-"`
-	UserManager   *auth.UserManager     `json:"-"`
+	Node          NodeInfo               `json:"node"`
+	Logs          []string               `json:"logs"`
+	IsRunning     bool                   `json:"is_running"`
+	WalletManager *wallet.WalletManager  `json:"-"`
+	GlobalLedger  *ledger.GlobalLedger   `json:"-"`
+	TwoFactorAuth *TwoFactorAuth         `json:"-"`
+	UserManager   *auth.UserManager      `json:"-"`
 	RenderStorage *storage.RenderStorage `json:"-"`
 }
 
@@ -984,21 +983,21 @@ func main() {
 	if err := renderStorage.EnsureDirectories(); err != nil {
 		log.Fatalf("Erro ao criar diretórios: %v", err)
 	}
-	
+
 	// Inicializar gerenciador de usuários com storage persistente
 	userManager := auth.NewUserManager(renderStorage.GetWalletsPath())
 
 	// Inicializar wallet manager
-	walletManager := auth.NewWalletManager()
+	walletManager := wallet.NewWalletManager(renderStorage.GetWalletsPath())
 
 	// Inicializar ledger global com storage persistente
 	globalLedger := ledger.NewGlobalLedger(renderStorage.GetLedgerPath(), walletManager)
 
-	// Inicializar seed nodes online
-	seedNodeManager := network.NewOnlineSeedNodeManager()
+	// Inicializar seed nodes online (usado no setupRoutes)
+	_ = network.NewOnlineSeedNodeManager()
 
 	// Inicializar 2FA
-	twoFactorAuth := auth.NewTwoFactorAuth()
+	twoFactorAuth := NewTwoFactorAuth()
 
 	// Configurar GUI
 	gui = BlockchainGUI{
@@ -1069,48 +1068,7 @@ func loadPersistentState() error {
 	return nil
 }
 
-// loadMiningState carrega o estado de mineração
-func loadMiningState() (int, error) {
-	filePath := gui.RenderStorage.GetMiningStatePath()
-	
-	// Se o arquivo não existir, retornar 0
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		return 0, nil
-	}
-	
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		return 0, err
-	}
-	
-	var state struct {
-		BlocksMined int `json:"blocks_mined"`
-	}
-	
-	if err := json.Unmarshal(data, &state); err != nil {
-		return 0, err
-	}
-	
-	return state.BlocksMined, nil
-}
 
-// saveMiningState salva o estado de mineração
-func saveMiningState(blocksMined int) error {
-	filePath := gui.RenderStorage.GetMiningStatePath()
-	
-	state := struct {
-		BlocksMined int `json:"blocks_mined"`
-	}{
-		BlocksMined: blocksMined,
-	}
-	
-	data, err := json.MarshalIndent(state, "", "  ")
-	if err != nil {
-		return err
-	}
-	
-	return os.WriteFile(filePath, data, 0644)
-}
 
 func setupRoutes() {
 	http.HandleFunc("/", handleHome)
