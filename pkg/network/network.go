@@ -10,10 +10,10 @@ import (
 )
 
 type Message struct {
-	Type   string              `json:"type"`
-	Block  *types.MicroBlock   `json:"block,omitempty"`
-	From   string              `json:"from"`
-	Hashes []string            `json:"hashes,omitempty"`
+	Type   string            `json:"type"`
+	Block  *types.MicroBlock `json:"block,omitempty"`
+	From   string            `json:"from"`
+	Hashes []string          `json:"hashes,omitempty"`
 }
 
 func StartServer(port string, d *dag.DAG) {
@@ -25,17 +25,20 @@ func StartServer(port string, d *dag.DAG) {
 
 	for {
 		conn, err := ln.Accept()
-		if err != nil { continue }
+		if err != nil {
+			continue
+		}
 		go handleConn(conn, d)
 	}
 }
-
 
 func handleConn(c net.Conn, d *dag.DAG) {
 	defer c.Close()
 	dec := json.NewDecoder(c)
 	var msg Message
-	if err := dec.Decode(&msg); err != nil { return }
+	if err := dec.Decode(&msg); err != nil {
+		return
+	}
 
 	switch msg.Type {
 	case "BLOCK":
@@ -74,7 +77,9 @@ func SyncNode(peers []string, d *dag.DAG) {
 	for _, p := range peers {
 		go func(addr string) {
 			c, err := net.DialTimeout("tcp", addr, 1*time.Second)
-			if err != nil { return }
+			if err != nil {
+				return
+			}
 			defer c.Close()
 			json.NewEncoder(c).Encode(Message{
 				Type: "SYNC_REQUEST",
@@ -87,7 +92,9 @@ func Broadcast(peers []string, msg Message) {
 	for _, p := range peers {
 		go func(addr string) {
 			c, err := net.DialTimeout("tcp", addr, 600*time.Millisecond)
-			if err != nil { return }
+			if err != nil {
+				return
+			}
 			defer c.Close()
 			json.NewEncoder(c).Encode(msg)
 		}(p)
