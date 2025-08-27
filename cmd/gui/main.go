@@ -1068,8 +1068,6 @@ func loadPersistentState() error {
 	return nil
 }
 
-
-
 func setupRoutes() {
 	http.HandleFunc("/", handleHome)
 	http.HandleFunc("/user-login", handleUserLogin)

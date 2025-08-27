@@ -12,10 +12,11 @@ type RenderStorage struct {
 
 // NewRenderStorage cria um novo storage para Render
 func NewRenderStorage() *RenderStorage {
-	// Render permite persistência apenas em /opt/render/data
+	// Render permite persistência em /tmp ou diretórios do usuário
 	dataDir := os.Getenv("DATA_DIR")
 	if dataDir == "" {
-		dataDir = "/opt/render/data"
+		// Usar /tmp como fallback seguro
+		dataDir = "/tmp/ordm-data"
 	}
 	
 	// Criar diretório se não existir

@@ -1,12 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 
-# Script de inicialização para ORDM Testnet no Render
 echo "🚀 Iniciando ORDM Testnet..."
+echo "🔧 Iniciando serviços da testnet..."
 
-# Definir variáveis de ambiente
+# Configurar variáveis de ambiente
 export PORT=${PORT:-3000}
 export EXPLORER_PORT=${EXPLORER_PORT:-8080}
 export MONITOR_PORT=${MONITOR_PORT:-9090}
+export DATA_DIR=${DATA_DIR:-/tmp/ordm-data}
+export RENDER_EXTERNAL_URL=${RENDER_EXTERNAL_URL:-https://ordm-testnet-1.onrender.com}
 
 # Em produção (Render), usar apenas a porta principal
 if [ "$NODE_ENV" = "production" ]; then
@@ -15,34 +17,52 @@ if [ "$NODE_ENV" = "production" ]; then
     export MONITOR_PORT=$PORT
 fi
 
-# Criar diretórios se não existirem
-mkdir -p /app/data /app/logs /app/backups /app/wallets
+echo "📊 Configuração:"
+echo "  - Porta principal: $PORT"
+echo "  - Porta Explorer: $EXPLORER_PORT"
+echo "  - Porta Monitor: $MONITOR_PORT"
+echo "  - Data Directory: $DATA_DIR"
+echo "  - External URL: $RENDER_EXTERNAL_URL"
 
-# Função para iniciar serviço em background
+# Criar diretórios necessários
+echo "📁 Criando diretórios..."
+mkdir -p $DATA_DIR
+mkdir -p $DATA_DIR/wallets
+mkdir -p $DATA_DIR/blockchain
+
+# Função para iniciar serviço
 start_service() {
     local service_name=$1
-    local command=$2
+    local binary_path=$2
     local port=$3
     
     echo "📡 Iniciando $service_name na porta $port..."
-    $command &
+    
+    # Verificar se o binário existe
+    if [ ! -f "$binary_path" ]; then
+        echo "❌ Binário não encontrado: $binary_path"
+        return 1
+    fi
+    
+    # Tornar executável
+    chmod +x "$binary_path"
+    
+    # Iniciar em background
+    $binary_path &
     local pid=$!
-    echo "$service_name iniciado com PID: $pid"
     
-    # Aguardar um pouco para o serviço inicializar
-    sleep 3
+    # Aguardar um pouco para verificar se iniciou
+    sleep 2
     
-    # Verificar se o serviço está rodando
+    # Verificar se o processo ainda está rodando
     if kill -0 $pid 2>/dev/null; then
-        echo "✅ $service_name está rodando"
+        echo "$service_name iniciado com PID: $pid"
+        return 0
     else
         echo "❌ $service_name falhou ao iniciar"
         return 1
     fi
 }
-
-# Iniciar serviços
-echo "🔧 Iniciando serviços da testnet..."
 
 # Iniciar Node (porta principal)
 if ! start_service "Node" "./ordm-node" $PORT; then
@@ -66,11 +86,11 @@ fi
 
 echo "🎉 ORDM Testnet iniciada com sucesso!"
 echo "📊 URLs disponíveis:"
-echo "  Node:     http://localhost:$PORT"
+echo "  Node: http://localhost:$PORT"
 echo "  Explorer: http://localhost:$EXPLORER_PORT"
-echo "  Monitor:  http://localhost:$MONITOR_PORT"
+echo "  Monitor: http://localhost:$MONITOR_PORT"
 
-# Manter o container rodando
+# Manter o script rodando
 echo "🔄 Mantendo serviços ativos..."
 while true; do
     sleep 30

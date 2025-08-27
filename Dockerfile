@@ -1,7 +1,7 @@
-# Dockerfile para ORDM Testnet
+# Build stage
 FROM golang:1.25-alpine AS builder
 
-# Instalar dependências necessárias
+# Instalar dependências
 RUN apk add --no-cache git ca-certificates tzdata
 
 # Definir diretório de trabalho
@@ -21,11 +21,11 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ordm-node ./cmd/g
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ordm-explorer ./cmd/explorer
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ordm-monitor ./cmd/monitor
 
-# Imagem final
+# Final stage
 FROM alpine:latest
 
-# Instalar ca-certificates para HTTPS
-RUN apk --no-cache add ca-certificates tzdata
+# Instalar dependências necessárias
+RUN apk --no-cache add ca-certificates tzdata bash
 
 # Criar usuário não-root
 RUN addgroup -g 1001 -S ordm && \
@@ -35,26 +35,28 @@ RUN addgroup -g 1001 -S ordm && \
 WORKDIR /app
 
 # Copiar binários compilados
-COPY --from=builder /app/ordm-node /app/
-COPY --from=builder /app/ordm-explorer /app/
-COPY --from=builder /app/ordm-monitor /app/
+COPY --from=builder /app/ordm-node /app/ordm-explorer /app/ordm-monitor ./
 
 # Copiar arquivos estáticos
-COPY --from=builder /app/cmd/monitor/dashboard.html /app/
+COPY --from=builder /app/cmd/gui/login_interface.html ./
+COPY --from=builder /app/cmd/explorer/explorer.html ./
+COPY --from=builder /app/cmd/monitor/monitor.html ./
+
+# Copiar script de inicialização
+COPY scripts/start.sh ./
 
 # Criar diretórios necessários
-RUN mkdir -p /app/data /app/logs /app/backups /app/wallets && \
-    chown -R ordm:ordm /app
+RUN mkdir -p /tmp/ordm-data /tmp/ordm-data/wallets /tmp/ordm-data/blockchain && \
+    chown -R ordm:ordm /app /tmp/ordm-data
+
+# Tornar script executável
+RUN chmod +x start.sh
 
 # Mudar para usuário não-root
 USER ordm
 
-# Expor portas
-EXPOSE 3000 8080 9090
+# Expor porta
+EXPOSE 3000
 
-# Script de inicialização
-COPY --chown=ordm:ordm scripts/start.sh /app/
-RUN chmod +x /app/start.sh
-
-# Comando padrão
-CMD ["/app/start.sh"]
+# Comando de inicialização
+CMD ["./start.sh"]
