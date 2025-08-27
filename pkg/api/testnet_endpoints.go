@@ -30,11 +30,10 @@ func NewTestnetEndpoints() *TestnetEndpoints {
 
 // RegisterTestnetEndpoints registra endpoints da testnet
 func (te *TestnetEndpoints) RegisterTestnetEndpoints(mux *http.ServeMux) {
-	// Inicializar seed nodes da testnet
-	te.SeedNodeManager.InitializeTestnetSeedNodes()
-
+	// Inicializar seed nodes da testnet (já feito no construtor)
+	
 	// Iniciar serviços em background
-	go te.SeedNodeManager.StartSeedNodeHeartbeat()
+	go te.startSeedNodeHealthCheck()
 	go te.FaucetManager.StartFaucetCleanup()
 
 	// Endpoints da testnet
@@ -45,6 +44,16 @@ func (te *TestnetEndpoints) RegisterTestnetEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc("/api/testnet/network", te.handleNetworkInfo)
 	mux.HandleFunc("/api/testnet/peers", te.handleBootstrapPeers)
 	mux.HandleFunc("/api/testnet/status", te.handleTestnetStatus)
+}
+
+// startSeedNodeHealthCheck inicia verificação de saúde dos seed nodes
+func (te *TestnetEndpoints) startSeedNodeHealthCheck() {
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+	
+	for range ticker.C {
+		te.SeedNodeManager.HealthCheck()
+	}
 }
 
 // handleFaucet processa requisições ao faucet
@@ -168,17 +177,16 @@ func (te *TestnetEndpoints) handleSeedNodes(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	activeSeeds := te.SeedNodeManager.GetActiveSeedNodes()
-	seedInfo := te.SeedNodeManager.GetSeedNodesInfo()
+	activeNodes := te.SeedNodeManager.GetActiveNodes()
+	nodeAddresses := te.SeedNodeManager.GetNodeAddresses()
 
 	response := map[string]interface{}{
 		"success": true,
 		"data": map[string]interface{}{
-			"seed_nodes":   activeSeeds,
-			"network_info": seedInfo,
-			"total_seeds":  seedInfo["total_seeds"],
-			"active_seeds": seedInfo["active_seeds"],
-			"total_peers":  seedInfo["total_peers"],
+			"seed_nodes":    activeNodes,
+			"node_addresses": nodeAddresses,
+			"total_nodes":   len(te.SeedNodeManager.Nodes),
+			"active_nodes":  len(activeNodes),
 		},
 	}
 
@@ -204,7 +212,10 @@ func (te *TestnetEndpoints) handleNetworkInfo(w http.ResponseWriter, r *http.Req
 			"heartbeat":    30,
 			"timeout":      60,
 		},
-		"seed_nodes": te.SeedNodeManager.GetSeedNodesInfo(),
+		"seed_nodes": map[string]interface{}{
+			"total_nodes": len(te.SeedNodeManager.Nodes),
+			"active_nodes": len(te.SeedNodeManager.GetActiveNodes()),
+		},
 		"faucet":     te.FaucetManager.GetFaucetStats(),
 	}
 
@@ -224,13 +235,13 @@ func (te *TestnetEndpoints) handleBootstrapPeers(w http.ResponseWriter, r *http.
 		return
 	}
 
-	peers := te.SeedNodeManager.GetBootstrapPeers()
+	nodeAddresses := te.SeedNodeManager.GetNodeAddresses()
 
 	response := map[string]interface{}{
 		"success": true,
 		"data": map[string]interface{}{
-			"bootstrap_peers": peers,
-			"count":           len(peers),
+			"bootstrap_peers": nodeAddresses,
+			"count":           len(nodeAddresses),
 			"network":         "testnet",
 		},
 	}
@@ -247,11 +258,11 @@ func (te *TestnetEndpoints) handleTestnetStatus(w http.ResponseWriter, r *http.R
 	}
 
 	// Calcular status geral
-	seedInfo := te.SeedNodeManager.GetSeedNodesInfo()
+	activeNodes := te.SeedNodeManager.GetActiveNodes()
 	faucetStats := te.FaucetManager.GetFaucetStats()
 
-	activeSeeds := seedInfo["active_seeds"].(int)
-	totalSeeds := seedInfo["total_seeds"].(int)
+	activeSeeds := len(activeNodes)
+	totalSeeds := len(te.SeedNodeManager.Nodes)
 
 	status := "healthy"
 	if activeSeeds < totalSeeds/2 {
