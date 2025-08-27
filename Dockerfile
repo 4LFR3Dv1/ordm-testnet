@@ -27,6 +27,8 @@ FROM alpine:latest
 # Instalar dependências necessárias
 RUN apk --no-cache add ca-certificates tzdata bash
 
+
+
 # Criar usuário não-root
 RUN addgroup -g 1001 -S ordm && \
     adduser -u 1001 -S ordm -G ordm

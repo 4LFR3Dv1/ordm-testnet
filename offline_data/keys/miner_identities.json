@@ -1,0 +1,15 @@
+{
+  "miner_9783e0417cce1391": {
+    "created_at": "2025-08-27T12:11:41.05018-03:00",
+    "invalid_blocks": 0,
+    "is_validator": false,
+    "last_activity": "2025-08-27T12:11:41.050181-03:00",
+    "miner_id": "miner_9783e0417cce1391",
+    "private_key": "36b0b0154e8e41ce9312c8836bfc6016c937fe42a0ba043bc69afc7d4b4b4bf8473a1c9d4e89bde07df44c25df1022f27200ed5462cfa71b8d645999a1d07903",
+    "public_key": "473a1c9d4e89bde07df44c25df1022f27200ed5462cfa71b8d645999a1d07903",
+    "reputation": 100,
+    "stake_amount": 0,
+    "total_blocks": 0,
+    "valid_blocks": 0
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "blocks": {
+    "df1cfde5a3901f5916e97c1d419c4083ce8530894ed3a783946475c76246cd51": {
+      "block_hash": "df1cfde5a3901f5916e97c1d419c4083ce8530894ed3a783946475c76246cd51",
+      "header": {
+        "difficulty": 1,
+        "merkle_root": null,
+        "miner_id": "genesis",
+        "nonce": 0,
+        "number": 0,
+        "parent_hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "timestamp": 1756307501,
+        "version": 1
+      },
+      "miner_proof": {
+        "difficulty": 1,
+        "hash": null,
+        "miner_id": "genesis",
+        "nonce": 0,
+        "target": "gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "timestamp": 1756307501,
+        "work_done": ""
+      },
+      "signature": "",
+      "transactions": []
+    }
+  },
+  "difficulty": 4,
+  "last_block_hash": "df1cfde5a3901f5916e97c1d419c4083ce8530894ed3a783946475c76246cd51",
+  "pending_transactions": []
+}

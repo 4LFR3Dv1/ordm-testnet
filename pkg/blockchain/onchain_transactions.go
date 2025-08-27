@@ -104,12 +104,12 @@ func (ocl *OnChainLedger) canTransact(address string, amount int64) bool {
 	}
 
 	// Verificar se é validador usando interface
-	if w, ok := wallet.(interface{ IsValidator bool }); ok && w.IsValidator {
+	if w, ok := wallet.(interface{ IsValidator() bool }); ok && w.IsValidator() {
 		return true
 	}
 
 	// Verificar se tem stake suficiente usando interface
-	if w, ok := wallet.(interface{ StakeAmount int64 }); ok && w.StakeAmount >= amount {
+	if w, ok := wallet.(interface{ GetStakeAmount() int64 }); ok && w.GetStakeAmount() >= amount {
 		return true
 	}
 

@@ -163,7 +163,7 @@ func handleOfflineDashboard(w http.ResponseWriter, r *http.Request) {
             const timestamp = new Date().toLocaleTimeString();
             const logEntry = document.createElement('div');
             logEntry.className = 'log-entry';
-            logEntry.textContent = `[${timestamp}] ${message}`;
+            logEntry.textContent = "[" + timestamp + "] " + message;
             logs.appendChild(logEntry);
             logs.scrollTop = logs.scrollHeight;
         }
@@ -184,7 +184,7 @@ func handleOfflineDashboard(w http.ResponseWriter, r *http.Request) {
             const hours = Math.floor(seconds / 3600);
             const minutes = Math.floor((seconds % 3600) / 60);
             const secs = Math.floor(seconds % 60);
-            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            return hours.toString().padStart(2, '0') + ":" + minutes.toString().padStart(2, '0') + ":" + secs.toString().padStart(2, '0');
         }
 
         function startMining() {
@@ -223,7 +223,7 @@ func handleOfflineDashboard(w http.ResponseWriter, r *http.Request) {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        addLog(`✅ Bloco #${data.block_number} minerado! Hash: ${data.block_hash.substring(0, 16)}...`);
+                        addLog("✅ Bloco #" + data.block_number + " minerado! Hash: " + data.block_hash.substring(0, 16) + "...");
                         updateStats();
                     } else {
                         addLog('❌ Erro ao minerar bloco: ' + data.error);
@@ -237,7 +237,7 @@ func handleOfflineDashboard(w http.ResponseWriter, r *http.Request) {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        addLog(`✅ ${data.synced_blocks} blocos sincronizados`);
+                        addLog("✅ " + data.synced_blocks + " blocos sincronizados");
                         updateStats();
                     } else {
                         addLog('❌ Erro na sincronização: ' + data.error);

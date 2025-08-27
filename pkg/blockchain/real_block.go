@@ -228,17 +228,14 @@ func (rb *RealBlock) validateTransaction(tx Transaction) error {
 	}
 	
 	// Verificar assinatura (se fornecida)
-	if len(tx.Signature) > 0 {
-		// Aqui seria feita a verificação da assinatura
-		// Por simplicidade, apenas verificar se existe
-	}
+	// TODO: Implementar verificação de assinatura quando necessário
 	
 	return nil
 }
 
 // calculateTarget calcula o target baseado na dificuldade
 func calculateTarget(difficulty uint64) []byte {
-	target := new(big.Int).Lsh(big.NewInt(1), 256-difficulty)
+	target := new(big.Int).Lsh(big.NewInt(1), uint(256-difficulty))
 	return target.Bytes()
 }
 
