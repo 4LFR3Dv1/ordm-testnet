@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORDM Testnet - Login</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .login-container {
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 30px;
+            width: 400px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo h1 {
+            color: #00ff00;
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .logo .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            border-bottom-color: #00ff00;
+            color: #00ff00;
+        }
+        
+        .tab:hover {
+            background: #2a2a2a;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #00ff00;
+            font-weight: bold;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 5px;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            box-sizing: border-box;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #00ff00;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: #00cc00;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .info-box {
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .info-box h3 {
+            margin: 0 0 10px 0;
+            color: #00ff00;
+        }
+        
+        .info-box ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .info-box li {
+            margin-bottom: 5px;
+        }
+        
+        .pin-display {
+            background: #2a2a2a;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: #ff4444;
+            background: #2a2a2a;
+            border: 1px solid #ff4444;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success {
+            color: #00ff00;
+            background: #2a2a2a;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>🔗 ORDM Testnet</h1>
+            <div class="subtitle">Blockchain 2-Layer Online</div>
+        </div>
+        
+        <div class="tab-container">
+            <div class="tab active" onclick="switchTab('import')">📥 Importar Wallet</div>
+            <div class="tab" onclick="switchTab('create')">🆕 Criar Wallet</div>
+        </div>
+        
+        <div id="error-message" class="error"></div>
+        <div id="success-message" class="success"></div>
+        
+        <!-- Importar Wallet -->
+        <div id="import-tab" class="tab-content">
+            <div class="info-box">
+                <h3>📥 Importar Wallet Existente</h3>
+                <ul>
+                    <li>Digite sua public key existente</li>
+                    <li>Use o PIN único da sua wallet</li>
+                    <li>Acesse seus tokens e stake</li>
+                </ul>
+            </div>
+            
+            <form id="import-form" onsubmit="importWallet(event)">
+                <div class="form-group">
+                    <label for="public-key">🔑 Public Key:</label>
+                    <input type="text" id="public-key" name="publicKey" placeholder="Digite sua public key" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pin">🔐 PIN Único:</label>
+                    <input type="password" id="pin" name="pin" placeholder="Digite o PIN da wallet" maxlength="6" required>
+                </div>
+                
+                <button type="submit" class="btn">📥 Importar Wallet</button>
+            </form>
+        </div>
+        
+        <!-- Criar Wallet -->
+        <div id="create-tab" class="tab-content" style="display: none;">
+            <div class="info-box">
+                <h3>🆕 Criar Nova Wallet</h3>
+                <ul>
+                    <li>Gere uma nova public key</li>
+                    <li>Receba um PIN único</li>
+                    <li>Comece com 0 tokens</li>
+                    <li>Use o faucet para obter tokens de teste</li>
+                </ul>
+            </div>
+            
+            <div class="pin-display" id="pin-display">
+                Clique em "Gerar Wallet" para obter seu PIN
+            </div>
+            
+            <form id="create-form" onsubmit="createWallet(event)">
+                <div class="form-group">
+                    <label for="new-public-key">🔑 Nova Public Key:</label>
+                    <input type="text" id="new-public-key" name="publicKey" placeholder="Será gerada automaticamente" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="new-pin">🔐 PIN Único:</label>
+                    <input type="text" id="new-pin" name="pin" placeholder="Será gerado automaticamente" readonly>
+                </div>
+                
+                <button type="button" class="btn" onclick="generateWallet()">🎲 Gerar Wallet</button>
+                <button type="submit" class="btn" id="create-btn" disabled>🆕 Criar Wallet</button>
+            </form>
+        </div>
+        
+        <div class="info-box">
+            <h3>🌐 Testnet Online</h3>
+            <ul>
+                <li>✅ Persistência garantida</li>
+                <li>✅ Seed nodes públicos</li>
+                <li>✅ Validação PoS</li>
+                <li>✅ Stake e recompensas</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        let currentTab = 'import';
+        let generatedWallet = null;
+        
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Atualizar tabs
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Mostrar conteúdo correto
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            document.getElementById(tab + '-tab').style.display = 'block';
+            
+            // Limpar mensagens
+            hideMessages();
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+        
+        function hideMessages() {
+            document.getElementById('error-message').style.display = 'none';
+            document.getElementById('success-message').style.display = 'none';
+        }
+        
+        function generateWallet() {
+            // Gerar public key aleatória
+            const publicKey = 'wallet_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            // Gerar PIN de 6 dígitos
+            const pin = Math.floor(100000 + Math.random() * 900000).toString();
+            
+            // Atualizar campos
+            document.getElementById('new-public-key').value = publicKey;
+            document.getElementById('new-pin').value = pin;
+            
+            // Mostrar PIN
+            document.getElementById('pin-display').textContent = `🔐 PIN: ${pin}`;
+            
+            // Habilitar botão de criar
+            document.getElementById('create-btn').disabled = false;
+            
+            generatedWallet = { publicKey, pin };
+            
+            showSuccess('✅ Wallet gerada! Anote seu PIN com segurança.');
+        }
+        
+        function importWallet(event) {
+            event.preventDefault();
+            hideMessages();
+            
+            const formData = new FormData(event.target);
+            const publicKey = formData.get('publicKey');
+            const pin = formData.get('pin');
+            
+            if (publicKey.length < 8) {
+                showError('❌ Public key deve ter pelo menos 8 caracteres');
+                return;
+            }
+            
+            if (pin.length !== 6) {
+                showError('❌ PIN deve ter 6 dígitos');
+                return;
+            }
+            
+            // Enviar para o servidor
+            fetch('/advanced-login', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    showSuccess('✅ Wallet importada com sucesso!');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } else {
+                    showError('❌ Erro ao importar wallet. Verifique public key e PIN.');
+                }
+            })
+            .catch(error => {
+                showError('❌ Erro de conexão: ' + error.message);
+            });
+        }
+        
+        function createWallet(event) {
+            event.preventDefault();
+            hideMessages();
+            
+            if (!generatedWallet) {
+                showError('❌ Gere uma wallet primeiro');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('publicKey', generatedWallet.publicKey);
+            formData.append('pin', generatedWallet.pin);
+            
+            // Enviar para o servidor
+            fetch('/create-wallet', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    showSuccess('✅ Wallet criada com sucesso!');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } else {
+                    showError('❌ Erro ao criar wallet.');
+                }
+            })
+            .catch(error => {
+                showError('❌ Erro de conexão: ' + error.message);
+            });
+        }
+        
+        // Atualizar PIN a cada 10 segundos
+        setInterval(() => {
+            if (currentTab === 'create' && generatedWallet) {
+                generateWallet();
+            }
+        }, 10000);
+    </script>
+</body>
+</html>

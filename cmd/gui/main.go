@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -15,6 +16,8 @@ import (
 	"ordm-main/pkg/api"
 	"ordm-main/pkg/auth"
 	"ordm-main/pkg/ledger"
+	"ordm-main/pkg/network"
+	"ordm-main/pkg/storage"
 	"ordm-main/pkg/wallet"
 )
 
@@ -63,6 +66,7 @@ type BlockchainGUI struct {
 	GlobalLedger  *ledger.GlobalLedger  `json:"-"`
 	TwoFactorAuth *TwoFactorAuth        `json:"-"`
 	UserManager   *auth.UserManager     `json:"-"`
+	RenderStorage *storage.RenderStorage `json:"-"`
 }
 
 var gui BlockchainGUI
@@ -975,51 +979,38 @@ func startRealTimeUpdates() {
 }
 
 func main() {
-	// Inicializar gerenciador de usuários
-	// Em produção, usar diretório temporário
-	dataPath := "./data"
-	if os.Getenv("PORT") != "" || os.Getenv("NODE_ENV") == "production" {
-		dataPath = "/tmp/ordm-data"
+	// Inicializar storage do Render
+	renderStorage := storage.NewRenderStorage()
+	if err := renderStorage.EnsureDirectories(); err != nil {
+		log.Fatalf("Erro ao criar diretórios: %v", err)
 	}
-	userManager := auth.NewUserManager(dataPath)
+	
+	// Inicializar gerenciador de usuários com storage persistente
+	userManager := auth.NewUserManager(renderStorage.GetWalletsPath())
 
 	// Inicializar wallet manager
-	walletManager := wallet.NewWalletManager("./wallets")
+	walletManager := auth.NewWalletManager()
 
-	// Inicializar ledger global
-	globalLedger := ledger.NewGlobalLedger("./data", walletManager)
+	// Inicializar ledger global com storage persistente
+	globalLedger := ledger.NewGlobalLedger(renderStorage.GetLedgerPath(), walletManager)
 
-	// Carregar ledger existente
-	err := globalLedger.LoadLedger()
-	if err != nil {
-		fmt.Printf("Aviso: Erro ao carregar ledger: %v\n", err)
-	}
+	// Inicializar seed nodes online
+	seedNodeManager := network.NewOnlineSeedNodeManager()
 
-	// Inicializar sistema 2FA
-	twoFactorAuth := NewTwoFactorAuth()
-	pin := twoFactorAuth.GeneratePIN()
-	fmt.Printf("🔐 PIN 2FA gerado: %s (válido por 10 segundos)\n", pin)
+	// Inicializar 2FA
+	twoFactorAuth := auth.NewTwoFactorAuth()
 
-	// Inicializar endpoints da testnet
-	testnetEndpoints := api.NewTestnetEndpoints()
-
-	// Carregar estado de mineração se existir
-	miningState, err := loadMiningState()
-	if err != nil {
-		fmt.Printf("Aviso: Erro ao carregar estado de mineração: %v\n", err)
-	}
-
-	// Configurar node minerador individual
+	// Configurar GUI
 	gui = BlockchainGUI{
 		Node: NodeInfo{
 			Name:          "MinerNode",
 			Port:          8080,
-			Status:        "Parado",
+			Status:        "Iniciando",
 			IsRunning:     false,
 			IsMining:      false,
-			MiningStats:   MiningStats{TotalBlocks: int64(miningState)},
+			MiningStats:   MiningStats{},
 			Balance:       make(map[string]int64),
-			Peers:         []string{"8081", "8082", "8083"},
+			Peers:         []string{},
 			Difficulty:    1,
 			EnergyPrice:   0.12,
 			WalletName:    "miner_wallet",
@@ -1031,12 +1022,97 @@ func main() {
 		GlobalLedger:  globalLedger,
 		TwoFactorAuth: twoFactorAuth,
 		UserManager:   userManager,
+		RenderStorage: renderStorage,
 	}
 
-	// Carregar wallets existentes do usuário
-	loadExistingWallets()
+	// Carregar estado persistente
+	if err := loadPersistentState(); err != nil {
+		log.Printf("Aviso: Erro ao carregar estado persistente: %v", err)
+	}
 
-	// Configurar rotas HTTP
+	// Configurar rotas
+	setupRoutes()
+
+	// Iniciar servidor
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+
+	log.Printf("🔗 Blockchain 2-Layer - Node Online")
+	log.Printf("📱 Interface disponível em: http://localhost:%s", port)
+	log.Printf("💾 Storage persistente: %s", renderStorage.DataDir)
+
+	http.ListenAndServe(":"+port, nil)
+}
+
+// loadPersistentState carrega estado persistente do Render
+func loadPersistentState() error {
+	// Carregar estado de mineração
+	miningState, err := loadMiningState()
+	if err != nil {
+		return fmt.Errorf("erro ao carregar estado de mineração: %v", err)
+	}
+	gui.Node.MiningStats.TotalBlocks = int64(miningState)
+
+	// Carregar ledger global
+	if err := gui.GlobalLedger.LoadLedger(); err != nil {
+		return fmt.Errorf("erro ao carregar ledger: %v", err)
+	}
+
+	// Carregar usuários
+	if err := gui.UserManager.LoadUsers(); err != nil {
+		return fmt.Errorf("erro ao carregar usuários: %v", err)
+	}
+
+	log.Printf("📊 Estado persistente carregado: %d blocos minerados", miningState)
+	return nil
+}
+
+// loadMiningState carrega o estado de mineração
+func loadMiningState() (int, error) {
+	filePath := gui.RenderStorage.GetMiningStatePath()
+	
+	// Se o arquivo não existir, retornar 0
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return 0, nil
+	}
+	
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return 0, err
+	}
+	
+	var state struct {
+		BlocksMined int `json:"blocks_mined"`
+	}
+	
+	if err := json.Unmarshal(data, &state); err != nil {
+		return 0, err
+	}
+	
+	return state.BlocksMined, nil
+}
+
+// saveMiningState salva o estado de mineração
+func saveMiningState(blocksMined int) error {
+	filePath := gui.RenderStorage.GetMiningStatePath()
+	
+	state := struct {
+		BlocksMined int `json:"blocks_mined"`
+	}{
+		BlocksMined: blocksMined,
+	}
+	
+	data, err := json.MarshalIndent(state, "", "  ")
+	if err != nil {
+		return err
+	}
+	
+	return os.WriteFile(filePath, data, 0644)
+}
+
+func setupRoutes() {
 	http.HandleFunc("/", handleHome)
 	http.HandleFunc("/user-login", handleUserLogin)
 	http.HandleFunc("/advanced-login", handleAdvancedLogin)
@@ -1057,13 +1133,9 @@ func main() {
 	http.HandleFunc("/ledger", handleLedger)
 
 	// Registrar endpoints da testnet
+	testnetEndpoints := api.NewTestnetEndpoints()
 	testnetEndpoints.RegisterTestnetEndpoints(http.DefaultServeMux)
 
 	// Iniciar atualizações em tempo real
 	go startRealTimeUpdates()
-
-	// Iniciar servidor HTTP
-	fmt.Println("🔗 Blockchain 2-Layer - Node Minerador")
-	fmt.Println("📱 Interface disponível em: http://localhost:3000")
-	log.Fatal(http.ListenAndServe(":3000", nil))
 }
