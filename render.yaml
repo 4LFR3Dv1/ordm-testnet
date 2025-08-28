@@ -33,10 +33,14 @@ services:
       echo "🔧 BUILD NATIVO ORDM BLOCKCHAIN"
       echo "📋 Ambiente:"
       go version
+      echo "📋 Diretório atual:"
+      pwd
+      echo "📋 Listando arquivos:"
+      ls -la
       echo "📥 Dependências:"
       go mod download
       echo "🔨 Compilação:"
-      go build -v -o ordmd ./cmd/ordmd
+      go build -v -o ordmd cmd/ordmd/main.go
       echo "✅ SUCESSO!"
       ls -la ordmd
     startCommand: |
@@ -49,4 +53,4 @@ services:
 builds:
   - env: go
     goVersion: 1.25
-    buildCommand: go build -o ordmd ./cmd/ordmd
+    buildCommand: go build -o ordmd cmd/ordmd/main.go
