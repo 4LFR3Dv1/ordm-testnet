@@ -6,6 +6,13 @@ services:
     plan: starter
     goVersion: 1.25
     healthCheckPath: /api/v1/blockchain/info
+    # Configuração explícita para build nativo
+    buildFilter:
+      paths:
+        - "cmd/**/*.go"
+        - "pkg/**/*.go"
+        - "go.mod"
+        - "go.sum"
     envVars:
       - key: PORT
         value: 8081
@@ -19,5 +26,18 @@ services:
         value: 3000
       - key: BASE_URL
         value: https://ordm-testnet.onrender.com
-    buildCommand: go build -o ordmd ./cmd/ordmd
-    startCommand: ./ordmd --mode both --rpc-port $PORT
+    buildCommand: |
+      echo "🔧 BUILD NATIVO ORDM BLOCKCHAIN"
+      echo "📋 Ambiente:"
+      go version
+      echo "📥 Dependências:"
+      go mod download
+      echo "🔨 Compilação:"
+      go build -v -o ordmd ./cmd/ordmd
+      echo "✅ SUCESSO!"
+      ls -la ordmd
+    startCommand: |
+      echo "🚀 ORDM BLOCKCHAIN INICIANDO"
+      echo "🌐 Network: testnet"
+      echo "🔌 Port: $PORT"
+      ./ordmd --mode both --rpc-port $PORT
