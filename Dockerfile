@@ -16,10 +16,8 @@ RUN go mod download
 # Copiar código fonte
 COPY . .
 
-# Compilar aplicações
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ordm-node ./cmd/gui
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ordm-explorer ./cmd/explorer
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ordm-monitor ./cmd/monitor
+# Compilar aplicação principal (servidor web unificado)
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ordm-web ./cmd/web
 
 # Final stage
 FROM alpine:latest
@@ -36,8 +34,8 @@ RUN addgroup -g 1001 -S ordm && \
 # Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar binários compilados
-COPY --from=builder /app/ordm-node /app/ordm-explorer /app/ordm-monitor ./
+# Copiar binário compilado
+COPY --from=builder /app/ordm-web ./
 
 # Copiar arquivos estáticos (apenas os que existem)
 COPY --from=builder /app/cmd/gui/login_interface.html ./
@@ -60,4 +58,4 @@ USER ordm
 EXPOSE 3000
 
 # Comando de inicialização
-CMD ["./start.sh"]
+CMD ["./ordm-web"]
