@@ -20,5 +20,13 @@ services:
         value: 3000
       - key: BASE_URL
         value: https://ordm-testnet.onrender.com
-    buildCommand: go build -o ordmd ./cmd/ordmd
-    startCommand: ./ordmd --mode both --rpc-port $PORT
+    buildCommand: |
+      echo "🔧 Iniciando build nativo do ORDM Blockchain..."
+      go version
+      go mod download
+      go build -v -o ordmd ./cmd/ordmd
+      echo "✅ Build concluído com sucesso!"
+      ls -la ordmd
+    startCommand: |
+      echo "🚀 Iniciando ORDM Blockchain..."
+      ./ordmd --mode both --rpc-port $PORT
