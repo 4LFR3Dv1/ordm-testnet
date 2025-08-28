@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: ordm-testnet
+    name: ordm-blockchain
     env: go
     region: oregon
     plan: starter
@@ -18,6 +18,6 @@ services:
       - key: P2P_PORT
         value: 3000
       - key: BASE_URL
-        value: https://ordm-testnet.onrender.com
+        value: https://ordm-blockchain.onrender.com
     buildCommand: go build -o ordmd cmd/ordmd/main.go
     startCommand: ./ordmd --mode both --rpc-port $PORT
