@@ -19,5 +19,9 @@ services:
         value: 3000
       - key: BASE_URL
         value: https://ordm-blockchain.onrender.com
+      - key: MINING_ENABLED
+        value: "true"
+      - key: MINER_THREADS
+        value: "2"
     buildCommand: go build -o ordmd main.go
-    startCommand: ./ordmd --mode both --rpc-port $PORT --mining=true --miner-threads=2
+    startCommand: ./ordmd --mode both --rpc-port $PORT --mining=true --miner-threads=2 --difficulty=2

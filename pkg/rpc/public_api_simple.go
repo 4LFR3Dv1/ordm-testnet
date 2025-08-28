@@ -244,7 +244,7 @@ func (api *SimplePublicAPI) handleMiningStatus(w http.ResponseWriter, r *http.Re
 	}
 
 	status := map[string]interface{}{
-		"mining":     false,
+		"mining":     true, // TODO: Conectar com status real do node
 		"difficulty": 4,
 		"hash_rate":  0.0,
 		"miner_id":   "",
