@@ -17,7 +17,7 @@ RUN go mod download
 COPY . .
 
 # Compilar o executável integrado
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ordmd ./cmd/ordmd/
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ordmd ./cmd/ordmd
 
 # Imagem final
 FROM alpine:latest
