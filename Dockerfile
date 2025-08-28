@@ -1,5 +1,5 @@
 # 🏭 Dockerfile para ORDM Blockchain - Executável Integrado
-FROM golang:1.21-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # Instalar dependências necessárias
 RUN apk add --no-cache git ca-certificates tzdata

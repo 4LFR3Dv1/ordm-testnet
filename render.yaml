@@ -2,9 +2,10 @@ services:
   # Serviço principal da testnet (único serviço)
   - type: web
     name: ordm-testnet
-    env: docker
+    env: go
     region: oregon
     plan: starter
+    goVersion: 1.25
     healthCheckPath: /api/v1/blockchain/info
     envVars:
       - key: PORT
@@ -19,5 +20,5 @@ services:
         value: 3000
       - key: BASE_URL
         value: https://ordm-testnet.onrender.com
-    buildCommand: docker build -t ordm-testnet .
-    startCommand: docker run -p $PORT:8081 ordm-testnet
+    buildCommand: go build -o ordmd ./cmd/ordmd
+    startCommand: ./ordmd --mode both --rpc-port $PORT
