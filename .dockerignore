@@ -1,37 +1,4 @@
-# Arquivos e diretórios a serem ignorados no build do Docker
-.git
-.gitignore
-README.md
-TESTNET_README.md
-*.md
-.DS_Store
-Thumbs.db
-
-# Binários compilados
-blockchain-gui-mac
-blockchain-explorer
-testnet-node
-testnet-explorer
-testnet-monitor
-*.exe
-
-# Logs e dados temporários
-*.log
-logs/
-backups/
-data/
-wallets/
-
-# Arquivos de desenvolvimento
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Arquivos de teste
-*_test.go
-test_*
-
-# Scripts de deploy (não necessários no container)
-scripts/deploy_*.sh
+# 🚫 IGNORAR TUDO - FORÇAR BUILD NATIVO
+*
+!.gitignore
+!README.md

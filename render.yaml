@@ -7,6 +7,12 @@ services:
     plan: starter
     goVersion: 1.25
     healthCheckPath: /api/v1/blockchain/info
+    # Forçar build nativo - não usar Docker
+    buildFilter:
+      paths:
+        - "**/*.go"
+        - "go.mod"
+        - "go.sum"
     envVars:
       - key: PORT
         value: 8081
@@ -22,11 +28,19 @@ services:
         value: https://ordm-testnet.onrender.com
     buildCommand: |
       echo "🔧 Iniciando build nativo do ORDM Blockchain..."
+      echo "📋 Verificando ambiente..."
       go version
+      echo "📥 Baixando dependências..."
       go mod download
+      echo "🔨 Compilando executável..."
       go build -v -o ordmd ./cmd/ordmd
       echo "✅ Build concluído com sucesso!"
+      echo "📊 Informações do binário:"
       ls -la ordmd
+      echo "🎯 Pronto para execução!"
     startCommand: |
       echo "🚀 Iniciando ORDM Blockchain..."
+      echo "🌐 Network: testnet"
+      echo "🔌 RPC Port: $PORT"
+      echo "⛏️  Mode: node + miner"
       ./ordmd --mode both --rpc-port $PORT
