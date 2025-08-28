@@ -1,0 +1,580 @@
+/* 🎨 ORDM Matrix Components CSS */
+
+.matrix-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.matrix-login-container {
+    background: var(--matrix-bg-secondary);
+    border: 1px solid var(--matrix-border);
+    border-radius: 8px;
+    padding: 32px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: var(--matrix-shadow-strong);
+}
+
+.matrix-logo {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.matrix-tabs {
+    display: flex;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--matrix-border);
+}
+
+.matrix-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--matrix-text-muted);
+    padding: 16px;
+    cursor: pointer;
+    font-family: var(--matrix-font-family);
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: all 0.3s;
+}
+
+.matrix-tab.active {
+    color: var(--matrix-accent);
+    border-bottom: 2px solid var(--matrix-accent);
+    box-shadow: 0 0 10px var(--matrix-glow);
+}
+
+.matrix-form {
+    display: none;
+}
+
+.matrix-form.active {
+    display: block;
+}
+
+.matrix-input-group {
+    margin-bottom: 16px;
+}
+
+.matrix-input {
+    width: 100%;
+    background: var(--matrix-bg);
+    border: 1px solid var(--matrix-border);
+    color: var(--matrix-text);
+    padding: 16px;
+    font-family: var(--matrix-font-family);
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+.matrix-input:focus {
+    border-color: var(--matrix-accent);
+    box-shadow: 0 0 10px var(--matrix-glow);
+    outline: none;
+}
+
+.matrix-btn {
+    background: transparent;
+    border: 1px solid var(--matrix-text);
+    color: var(--matrix-text);
+    padding: 16px 24px;
+    cursor: pointer;
+    font-family: var(--matrix-font-family);
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 4px;
+    transition: all 0.3s;
+    width: 100%;
+    margin-top: 16px;
+}
+
+.matrix-btn:hover {
+    background: var(--matrix-text);
+    color: var(--matrix-bg);
+    box-shadow: 0 0 15px var(--matrix-glow-strong);
+}
+
+.matrix-btn-primary {
+    border-color: var(--matrix-accent);
+    color: var(--matrix-accent);
+}
+
+.matrix-btn-primary:hover {
+    background: var(--matrix-accent);
+    color: var(--matrix-bg);
+}
+
+.matrix-status {
+    text-align: center;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--matrix-border);
+}
+
+/* 🎨 Componentes Matrix para Primeiro Acesso */
+
+/* 📋 Abas de Navegação */
+.matrix-access-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 0.5rem;
+  background: var(--matrix-bg-secondary);
+  border: 1px solid var(--matrix-green);
+  border-radius: 4px;
+}
+
+.matrix-tab-btn {
+  flex: 1;
+  padding: 1rem;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--matrix-text-muted);
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+}
+
+.matrix-tab-btn:hover {
+  color: var(--matrix-green);
+  border-color: var(--matrix-green);
+  background: rgba(0, 255, 0, 0.1);
+}
+
+.matrix-tab-btn.active {
+  color: var(--matrix-green);
+  border-color: var(--matrix-green);
+  background: rgba(0, 255, 0, 0.2);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+}
+
+/* 📝 Formulários */
+.matrix-form {
+  display: none;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.matrix-form.active {
+  display: block;
+}
+
+/* 📋 Indicador de Passos */
+.matrix-step-indicator {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--matrix-bg-secondary);
+  border: 1px solid var(--matrix-green);
+  border-radius: 4px;
+}
+
+.step {
+  padding: 0.5rem 1rem;
+  color: var(--matrix-text-muted);
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.step.active {
+  color: var(--matrix-green);
+  border-color: var(--matrix-green);
+  background: rgba(0, 255, 0, 0.1);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+/* 📝 Passos do Formulário */
+.matrix-step {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.matrix-step[data-step="2"],
+.matrix-step[data-step="3"] {
+  display: none;
+}
+
+/* 🔑 Seção de Chave Pública */
+.matrix-key-section {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.matrix-key-section .matrix-input {
+  flex: 1;
+}
+
+.matrix-key-section .matrix-btn {
+  white-space: nowrap;
+  min-width: 120px;
+}
+
+.matrix-key-display {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--matrix-bg-tertiary);
+  border: 1px solid var(--matrix-green);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  animation: slideIn 0.5s ease-out;
+}
+
+.matrix-key-label {
+  color: var(--matrix-text-muted);
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.matrix-key-value {
+  color: var(--matrix-green);
+  font-size: 1.1rem;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px var(--matrix-green);
+  word-break: break-all;
+  padding: 0.5rem;
+  background: rgba(0, 255, 0, 0.1);
+  border-radius: 4px;
+}
+
+.matrix-key-info {
+  color: var(--matrix-warning);
+  font-size: 0.8rem;
+  font-style: italic;
+  text-align: center;
+}
+
+/* 🔐 Seção de Login */
+.matrix-login-section {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--matrix-bg-secondary);
+  border: 1px solid var(--matrix-green);
+  border-radius: 4px;
+}
+
+/* ⛏️ Seção de MinerID */
+.matrix-miner-section {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--matrix-bg-secondary);
+  border: 1px solid var(--matrix-green);
+  border-radius: 4px;
+}
+
+.matrix-miner-info {
+  margin-bottom: 2rem;
+}
+
+.matrix-info-text {
+  color: var(--matrix-text-muted);
+  font-size: 0.8rem;
+  font-style: italic;
+  display: block;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.matrix-info-box {
+  background: var(--matrix-bg-tertiary);
+  border: 1px solid var(--matrix-green);
+  border-radius: 4px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.matrix-info-box h4 {
+  color: var(--matrix-green);
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.matrix-info-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.matrix-info-box li {
+  color: var(--matrix-text);
+  font-size: 0.9rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+.matrix-info-box li:last-child {
+  border-bottom: none;
+}
+
+.matrix-info-box li:before {
+  content: "→ ";
+  color: var(--matrix-green);
+  font-weight: bold;
+}
+
+/* 🔐 Seção de PIN */
+.matrix-pin-section {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--matrix-bg-secondary);
+  border: 1px solid var(--matrix-green);
+  border-radius: 4px;
+}
+
+.matrix-subheading {
+  color: var(--matrix-green);
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.matrix-pin-display {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--matrix-bg-tertiary);
+  border: 1px solid var(--matrix-green);
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.matrix-pin-label {
+  color: var(--matrix-text-muted);
+  font-size: 0.9rem;
+}
+
+.matrix-pin-value {
+  color: var(--matrix-green);
+  font-size: 1.5rem;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px var(--matrix-green);
+}
+
+.matrix-pin-timer {
+  color: var(--matrix-warning);
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+/* ⚙️ Seção de Configuração */
+.matrix-config-section {
+  margin-bottom: 2rem;
+}
+
+.matrix-config-section h3 {
+  color: var(--matrix-green);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* 🔘 Grupo de Botões */
+.matrix-btn-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.matrix-btn-group .matrix-btn {
+  flex: 1;
+  max-width: 150px;
+}
+
+/* 🎨 Botões Específicos */
+.matrix-btn-info {
+  background: linear-gradient(45deg, var(--matrix-info), var(--matrix-info-dark));
+  border-color: var(--matrix-info);
+}
+
+.matrix-btn-info:hover {
+  background: linear-gradient(45deg, var(--matrix-info-dark), var(--matrix-info));
+  box-shadow: 0 0 20px rgba(0, 150, 255, 0.5);
+}
+
+.matrix-btn-success {
+  background: linear-gradient(45deg, var(--matrix-success), var(--matrix-success-dark));
+  border-color: var(--matrix-success);
+}
+
+.matrix-btn-success:hover {
+  background: linear-gradient(45deg, var(--matrix-success-dark), var(--matrix-success));
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+}
+
+.matrix-btn-secondary {
+  background: linear-gradient(45deg, var(--matrix-bg-secondary), var(--matrix-bg-tertiary));
+  border-color: var(--matrix-text-muted);
+  color: var(--matrix-text-muted);
+}
+
+.matrix-btn-secondary:hover {
+  background: linear-gradient(45deg, var(--matrix-bg-tertiary), var(--matrix-bg-secondary));
+  border-color: var(--matrix-green);
+  color: var(--matrix-green);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+}
+
+/* 🎯 Mensagem de Boas-vindas */
+.matrix-welcome {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--matrix-bg-secondary), var(--matrix-bg-tertiary));
+  border: 1px solid var(--matrix-green);
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+}
+
+.matrix-welcome-text h2 {
+  color: var(--matrix-green);
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 15px var(--matrix-green);
+}
+
+.matrix-welcome-text p {
+  color: var(--matrix-text);
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* 📱 Responsividade */
+@media (max-width: 768px) {
+  .matrix-access-tabs {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .matrix-tab-btn {
+    text-align: center;
+  }
+  
+  .matrix-step-indicator {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .step {
+    text-align: center;
+  }
+  
+  .matrix-btn-group {
+    flex-direction: column;
+  }
+  
+  .matrix-btn-group .matrix-btn {
+    max-width: none;
+  }
+  
+  .matrix-pin-display {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .matrix-key-section {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .matrix-key-section .matrix-btn {
+    min-width: auto;
+  }
+}
+
+/* 🎭 Animações */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 🔄 Transições Suaves */
+.matrix-step {
+  transition: all 0.3s ease-in-out;
+}
+
+.matrix-pin-display,
+.matrix-key-display {
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 🎨 Estados de Foco */
+.matrix-input:focus {
+  border-color: var(--matrix-green);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+  outline: none;
+}
+
+.matrix-btn:focus,
+.matrix-tab-btn:focus {
+  outline: 2px solid var(--matrix-green);
+  outline-offset: 2px;
+}
+
+/* 🚨 Estados de Erro */
+.matrix-input.error {
+  border-color: var(--matrix-error);
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+.matrix-error-message {
+  color: var(--matrix-error);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+/* ✅ Estados de Sucesso */
+.matrix-input.success {
+  border-color: var(--matrix-success);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+.matrix-success-message {
+  color: var(--matrix-success);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  text-align: center;
+}

@@ -5,13 +5,19 @@ services:
     env: docker
     region: oregon
     plan: starter
-    healthCheckPath: /
+    healthCheckPath: /api/v1/blockchain/info
     envVars:
       - key: PORT
-        value: 3000
+        value: 8081
       - key: NODE_ENV
         value: production
+      - key: DATA_DIR
+        value: /app/data
+      - key: ORDM_NETWORK
+        value: testnet
+      - key: P2P_PORT
+        value: 3000
       - key: BASE_URL
         value: https://ordm-testnet.onrender.com
     buildCommand: docker build -t ordm-testnet .
-    startCommand: docker run -p $PORT:3000 ordm-testnet
+    startCommand: docker run -p $PORT:8081 ordm-testnet

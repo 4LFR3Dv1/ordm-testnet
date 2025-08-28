@@ -12,16 +12,16 @@ import (
 type SimpleP2PNode struct {
 	nodeID       string
 	port         int
-	peers        map[string]*PeerInfo
+	peers        map[string]*SimplePeerInfo
 	mu           sync.RWMutex
 	listener     net.Listener
-	messageQueue chan *Message
+	messageQueue chan *SimpleMessage
 	running      bool
 	stopChan     chan struct{}
 }
 
-// PeerInfo informações sobre um peer
-type PeerInfo struct {
+// SimplePeerInfo informações sobre um peer (versão simplificada)
+type SimplePeerInfo struct {
 	ID        string    `json:"id"`
 	Address   string    `json:"address"`
 	LastSeen  time.Time `json:"last_seen"`
@@ -31,8 +31,8 @@ type PeerInfo struct {
 	Connected bool      `json:"connected"`
 }
 
-// Message representa uma mensagem P2P
-type Message struct {
+// SimpleMessage representa uma mensagem P2P (versão simplificada)
+type SimpleMessage struct {
 	Type      string          `json:"type"`
 	From      string          `json:"from"`
 	To        string          `json:"to,omitempty"`
@@ -47,8 +47,8 @@ func NewSimpleP2PNode(nodeID string, port int) *SimpleP2PNode {
 	return &SimpleP2PNode{
 		nodeID:       nodeID,
 		port:         port,
-		peers:        make(map[string]*PeerInfo),
-		messageQueue: make(chan *Message, 1000),
+		peers:        make(map[string]*SimplePeerInfo),
+		messageQueue: make(chan *SimpleMessage, 1000),
 		stopChan:     make(chan struct{}),
 	}
 }
@@ -108,7 +108,7 @@ func (sp *SimpleP2PNode) handleConnection(conn net.Conn) {
 	defer conn.Close()
 
 	// Ler mensagem
-	var message Message
+	var message SimpleMessage
 	if err := json.NewDecoder(conn).Decode(&message); err != nil {
 		return
 	}
@@ -134,7 +134,7 @@ func (sp *SimpleP2PNode) processMessages() {
 }
 
 // handleMessage processa uma mensagem
-func (sp *SimpleP2PNode) handleMessage(message *Message) {
+func (sp *SimpleP2PNode) handleMessage(message *SimpleMessage) {
 	switch message.Type {
 	case "BLOCK":
 		sp.handleBlockMessage(message)
@@ -154,20 +154,20 @@ func (sp *SimpleP2PNode) handleMessage(message *Message) {
 }
 
 // handleBlockMessage processa mensagem de bloco
-func (sp *SimpleP2PNode) handleBlockMessage(message *Message) {
+func (sp *SimpleP2PNode) handleBlockMessage(message *SimpleMessage) {
 	fmt.Printf("📦 Bloco recebido de %s\n", message.From)
 	// Implementar lógica de processamento de bloco
 }
 
 // handleTransactionMessage processa mensagem de transação
-func (sp *SimpleP2PNode) handleTransactionMessage(message *Message) {
+func (sp *SimpleP2PNode) handleTransactionMessage(message *SimpleMessage) {
 	fmt.Printf("💸 Transação recebida de %s\n", message.From)
 	// Implementar lógica de processamento de transação
 }
 
 // handlePeerInfoMessage processa mensagem de info do peer
-func (sp *SimpleP2PNode) handlePeerInfoMessage(message *Message) {
-	var peerInfo PeerInfo
+func (sp *SimpleP2PNode) handlePeerInfoMessage(message *SimpleMessage) {
+	var peerInfo SimplePeerInfo
 	if err := json.Unmarshal(message.Data, &peerInfo); err != nil {
 		return
 	}
@@ -178,7 +178,7 @@ func (sp *SimpleP2PNode) handlePeerInfoMessage(message *Message) {
 }
 
 // handleHeartbeatMessage processa heartbeat
-func (sp *SimpleP2PNode) handleHeartbeatMessage(message *Message) {
+func (sp *SimpleP2PNode) handleHeartbeatMessage(message *SimpleMessage) {
 	sp.mu.Lock()
 	if peer, exists := sp.peers[message.From]; exists {
 		peer.LastSeen = time.Now()
@@ -187,12 +187,12 @@ func (sp *SimpleP2PNode) handleHeartbeatMessage(message *Message) {
 }
 
 // handleSyncRequest processa requisição de sincronização
-func (sp *SimpleP2PNode) handleSyncRequest(message *Message) {
+func (sp *SimpleP2PNode) handleSyncRequest(message *SimpleMessage) {
 	// Implementar sincronização
 }
 
 // handleSyncResponse processa resposta de sincronização
-func (sp *SimpleP2PNode) handleSyncResponse(message *Message) {
+func (sp *SimpleP2PNode) handleSyncResponse(message *SimpleMessage) {
 	// Implementar processamento de sincronização
 }
 
@@ -200,7 +200,7 @@ func (sp *SimpleP2PNode) handleSyncResponse(message *Message) {
 func (sp *SimpleP2PNode) ConnectToPeer(address string) error {
 	// Adicionar peer à lista
 	sp.mu.Lock()
-	sp.peers[address] = &PeerInfo{
+	sp.peers[address] = &SimplePeerInfo{
 		ID:        address,
 		Address:   address,
 		LastSeen:  time.Now(),
@@ -213,7 +213,7 @@ func (sp *SimpleP2PNode) ConnectToPeer(address string) error {
 }
 
 // SendMessage envia mensagem para um peer
-func (sp *SimpleP2PNode) SendMessage(address string, message *Message) error {
+func (sp *SimpleP2PNode) SendMessage(address string, message *SimpleMessage) error {
 	conn, err := net.DialTimeout("tcp", address, 5*time.Second)
 	if err != nil {
 		return fmt.Errorf("erro ao conectar: %v", err)
@@ -232,7 +232,7 @@ func (sp *SimpleP2PNode) SendMessage(address string, message *Message) error {
 }
 
 // Broadcast envia mensagem para todos os peers
-func (sp *SimpleP2PNode) Broadcast(message *Message) error {
+func (sp *SimpleP2PNode) Broadcast(message *SimpleMessage) error {
 	sp.mu.RLock()
 	peers := make([]string, 0, len(sp.peers))
 	for peerID := range sp.peers {
@@ -264,7 +264,7 @@ func (sp *SimpleP2PNode) heartbeat() {
 
 // sendHeartbeat envia heartbeat para todos os peers
 func (sp *SimpleP2PNode) sendHeartbeat() {
-	message := &Message{
+	message := &SimpleMessage{
 		Type:      "HEARTBEAT",
 		From:      sp.nodeID,
 		Timestamp: time.Now(),
@@ -275,11 +275,11 @@ func (sp *SimpleP2PNode) sendHeartbeat() {
 }
 
 // GetPeers retorna lista de peers
-func (sp *SimpleP2PNode) GetPeers() []*PeerInfo {
+func (sp *SimpleP2PNode) GetPeers() []*SimplePeerInfo {
 	sp.mu.RLock()
 	defer sp.mu.RUnlock()
 
-	peers := make([]*PeerInfo, 0, len(sp.peers))
+	peers := make([]*SimplePeerInfo, 0, len(sp.peers))
 	for _, peer := range sp.peers {
 		peers = append(peers, peer)
 	}

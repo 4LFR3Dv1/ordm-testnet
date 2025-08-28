@@ -13,11 +13,11 @@ import (
 type ContractType string
 
 const (
-	TimelockContract    ContractType = "timelock"
-	MultisigContract    ContractType = "multisig"
-	EscrowContract      ContractType = "escrow"
-	VestingContract     ContractType = "vesting"
-	ConditionalContract ContractType = "conditional"
+	ContractTypeTimelock    ContractType = "timelock"
+	ContractTypeMultisig    ContractType = "multisig"
+	ContractTypeEscrow      ContractType = "escrow"
+	ContractTypeVesting     ContractType = "vesting"
+	ContractTypeConditional ContractType = "conditional"
 )
 
 // ContractStatus define status do contrato
@@ -122,7 +122,7 @@ func NewContractManager() *ContractManager {
 func (cm *ContractManager) CreateTimelockContract(creator, recipient string, amount int64, unlockTime int64) (*TimelockContract, error) {
 	contract := &SmartContract{
 		ID:           generateContractID(),
-		Type:         TimelockContract,
+		Type:         ContractTypeTimelock,
 		Status:       ContractPending,
 		Creator:      creator,
 		Participants: []string{creator, recipient},
@@ -159,7 +159,7 @@ func (cm *ContractManager) CreateMultisigContract(creator string, signers []stri
 
 	contract := &SmartContract{
 		ID:           generateContractID(),
-		Type:         MultisigContract,
+		Type:         ContractTypeMultisig,
 		Status:       ContractPending,
 		Creator:      creator,
 		Participants: append([]string{creator}, signers...),
@@ -191,7 +191,7 @@ func (cm *ContractManager) CreateMultisigContract(creator string, signers []stri
 func (cm *ContractManager) CreateEscrowContract(buyer, seller, arbitrator string, amount int64, itemHash string) (*EscrowContract, error) {
 	contract := &SmartContract{
 		ID:           generateContractID(),
-		Type:         EscrowContract,
+		Type:         ContractTypeEscrow,
 		Status:       ContractPending,
 		Creator:      buyer,
 		Participants: []string{buyer, seller, arbitrator},
@@ -228,7 +228,7 @@ func (cm *ContractManager) CreateEscrowContract(buyer, seller, arbitrator string
 func (cm *ContractManager) CreateVestingContract(creator, beneficiary string, totalAmount int64, cliffTime, vestingPeriod, releasePeriod int64) (*VestingContract, error) {
 	contract := &SmartContract{
 		ID:           generateContractID(),
-		Type:         VestingContract,
+		Type:         ContractTypeVesting,
 		Status:       ContractActive,
 		Creator:      creator,
 		Participants: []string{creator, beneficiary},
@@ -267,7 +267,7 @@ func (cm *ContractManager) CreateVestingContract(creator, beneficiary string, to
 func (cm *ContractManager) CreateConditionalContract(creator string, condition, ifTrue, ifFalse string, amount int64) (*ConditionalContract, error) {
 	contract := &SmartContract{
 		ID:           generateContractID(),
-		Type:         ConditionalContract,
+		Type:         ContractTypeConditional,
 		Status:       ContractPending,
 		Creator:      creator,
 		Participants: []string{creator},
@@ -312,15 +312,15 @@ func (cm *ContractManager) ExecuteContract(contractID string, executor string, p
 
 	// Executar baseado no tipo
 	switch contract.Type {
-	case TimelockContract:
+	case ContractTypeTimelock:
 		return cm.executeTimelock(contract, executor, params)
-	case MultisigContract:
+	case ContractTypeMultisig:
 		return cm.executeMultisig(contract, executor, params)
-	case EscrowContract:
+	case ContractTypeEscrow:
 		return cm.executeEscrow(contract, executor, params)
-	case VestingContract:
+	case ContractTypeVesting:
 		return cm.executeVesting(contract, executor, params)
-	case ConditionalContract:
+	case ContractTypeConditional:
 		return cm.executeConditional(contract, executor, params)
 	default:
 		return fmt.Errorf("tipo de contrato não suportado: %s", contract.Type)
@@ -392,15 +392,15 @@ func (cm *ContractManager) GetContractsByParticipant(participant string) []*Smar
 // canExecute verifica se pode executar contrato
 func (cm *ContractManager) canExecute(contract *SmartContract, executor string) bool {
 	switch contract.Type {
-	case TimelockContract:
+	case ContractTypeTimelock:
 		return cm.canExecuteTimelock(contract, executor)
-	case MultisigContract:
+	case ContractTypeMultisig:
 		return cm.canExecuteMultisig(contract, executor)
-	case EscrowContract:
+	case ContractTypeEscrow:
 		return cm.canExecuteEscrow(contract, executor)
-	case VestingContract:
+	case ContractTypeVesting:
 		return cm.canExecuteVesting(contract, executor)
-	case ConditionalContract:
+	case ContractTypeConditional:
 		return cm.canExecuteConditional(contract, executor)
 	default:
 		return false

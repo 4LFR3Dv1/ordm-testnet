@@ -3,6 +3,7 @@ package auth
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -40,24 +41,24 @@ func NewUserManager(dataPath string) *UserManager {
 	if os.Getenv("PORT") != "" || os.Getenv("NODE_ENV") == "production" {
 		dataPath = "/tmp/ordm-data"
 	}
-	
+
 	// Criar diretório se não existir
 	os.MkdirAll(dataPath, 0755)
-	
+
 	um := &UserManager{
 		Users:       make(map[string]*User),
 		WalletAuths: make(map[string]*WalletAuth),
 		FilePath:    filepath.Join(dataPath, "users.json"),
 	}
-	
+
 	// Carregar dados existentes
 	um.LoadUsers()
-	
+
 	// Criar usuário padrão se não existir
 	if len(um.Users) == 0 {
 		um.CreateDefaultUser()
 	}
-	
+
 	return um
 }
 
@@ -70,10 +71,16 @@ func (um *UserManager) CreateDefaultUser() {
 		um.WalletAuths = make(map[string]*WalletAuth)
 	}
 
+	// Obter senha hash do ambiente
+	adminPasswordHash := os.Getenv("ADMIN_PASSWORD_HASH")
+	if adminPasswordHash == "" {
+		log.Fatal("ADMIN_PASSWORD_HASH environment variable is required")
+	}
+
 	defaultUser := &User{
 		ID:           "default_user",
 		Username:     "admin",
-		PasswordHash: "admin123", // Em produção, usar hash real
+		PasswordHash: adminPasswordHash,
 		WalletIDs:    []string{},
 		CreatedAt:    time.Now(),
 		LastLogin:    time.Now(),

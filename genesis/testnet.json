@@ -1,0 +1,75 @@
+{
+  "block": {
+    "header": {
+      "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "merkle_root": "0000000000000000000000000000000000000000000000000000000000000000",
+      "timestamp": 1704067200,
+      "difficulty": 4,
+      "nonce": 0
+    },
+    "transactions": [
+      {
+        "tx_hash": "genesis_tx_0000000000000000000000000000000000000000000000000000000000000000",
+        "from": "genesis",
+        "to": "0000000000000000000000000000000000000000",
+        "amount": 1000000,
+        "fee": 0,
+        "nonce": 0,
+        "timestamp": 1704067200,
+        "signature": "genesis_signature",
+        "status": "confirmed",
+        "data": "Genesis Block - Fundos para desenvolvimento"
+      },
+      {
+        "tx_hash": "genesis_tx_0000000000000000000000000000000000000000000000000000000000000001",
+        "from": "genesis",
+        "to": "0000000000000000000000000000000000000001",
+        "amount": 1000000,
+        "fee": 0,
+        "nonce": 1,
+        "timestamp": 1704067200,
+        "signature": "genesis_signature",
+        "status": "confirmed",
+        "data": "Genesis Block - Fundos para comunidade"
+      }
+    ],
+    "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "nonce": 0,
+    "difficulty": 4,
+    "miner": "genesis",
+    "timestamp": 1704067200,
+    "signature": "genesis_signature"
+  },
+  "metadata": {
+    "network_id": "ordm-testnet-v1",
+    "version": "1.0.0",
+    "created_at": "2024-01-01T00:00:00Z",
+    "total_supply": 10000000,
+    "description": "Bloco Genesis da ORDM Testnet",
+    "features": [
+      "proof-of-work",
+      "p2p-network",
+      "rpc-api",
+      "smart-contracts"
+    ]
+  },
+  "distribution": {
+    "development_fund": {
+      "address": "0000000000000000000000000000000000000000",
+      "amount": 1000000,
+      "percentage": 10,
+      "description": "Fundos para desenvolvimento da plataforma"
+    },
+    "community_fund": {
+      "address": "0000000000000000000000000000000000000001",
+      "amount": 1000000,
+      "percentage": 10,
+      "description": "Fundos para comunidade e incentivos"
+    },
+    "mining_rewards": {
+      "amount": 8000000,
+      "percentage": 80,
+      "description": "Recompensas para mineradores"
+    }
+  }
+}

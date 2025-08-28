@@ -7,6 +7,8 @@ import (
 	"log"
 	"sync"
 	"time"
+
+	"ordm-main/pkg/security"
 )
 
 // FaucetRequest representa uma requisição ao faucet
@@ -117,17 +119,9 @@ func (fm *FaucetManager) ProcessFaucetRequest(address, ip string, amount int64) 
 
 // validateAddress valida o endereço da wallet
 func (fm *FaucetManager) validateAddress(address string) error {
-	if len(address) < fm.Config.MinAddressLen || len(address) > fm.Config.MaxAddressLen {
-		return fmt.Errorf("tamanho do endereço inválido: %d (deve ser entre %d e %d)",
-			len(address), fm.Config.MinAddressLen, fm.Config.MaxAddressLen)
-	}
-
-	// Verificar se é um endereço válido (hex)
-	if _, err := hex.DecodeString(address); err != nil {
-		return fmt.Errorf("endereço deve ser hexadecimal válido")
-	}
-
-	return nil
+	// Usar validador robusto do sistema de segurança
+	validator := security.NewInputValidator()
+	return validator.ValidateInput(address, "address")
 }
 
 // validateAmount valida a quantidade solicitada

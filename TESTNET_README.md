@@ -1,449 +1,288 @@
-# 🌐 ORDM Testnet - Guia Completo
+ # 🚀 ORDM Testnet - Guia de Início Rápido
 
 ## 📋 Visão Geral
 
-A **ORDM Testnet** é a rede de testes pública da blockchain 2-layer ORDM. Esta rede permite que desenvolvedores testem funcionalidades, validem contratos e participem da mineração antes do lançamento da mainnet.
+A **ORDM Testnet** é uma rede de teste pública da ORDM Blockchain que permite aos usuários testar funcionalidades, minerar blocos e interagir com a blockchain antes do lançamento da mainnet.
 
-## 🚀 Características da Testnet
+## 🎯 Características da Testnet
 
-### **✅ Funcionalidades Disponíveis**
-- **Mineração PoW**: Teste de mineração com dificuldade reduzida
-- **Staking PoS**: Sistema de validação com stake mínimo baixo
-- **Faucet**: Distribuição gratuita de tokens de teste
-- **Explorer**: Interface pública para visualizar a blockchain
-- **API REST**: Endpoints para integração
-- **Seed Nodes**: Nós de entrada públicos e estáveis
+- **Rede Pública**: Qualquer pessoa pode participar
+- **Proof of Work**: Algoritmo de consenso PoW
+- **P2P Network**: Comunicação peer-to-peer
+- **RPC API**: Interface para desenvolvedores
+- **Minerador CLI**: Ferramenta de mineração
+- **Supply Limitado**: 10 milhões de tokens ORDM
 
-### **💰 Tokenomics da Testnet**
-- **Supply**: Ilimitado (apenas para testes)
-- **Recompensa**: 50 tokens por bloco
-- **Stake Mínimo**: 100 tokens (reduzido para testes)
-- **Faucet**: 50 tokens por requisição (1x por hora por IP)
+## 🛠️ Pré-requisitos
 
-## 🔧 Como Participar
+### Software Necessário
+- **Go 1.19+** - [Download](https://golang.org/dl/)
+- **Git** - Para clonar o repositório
+- **Docker** (opcional) - Para rodar com containers
 
-### **1. Pré-requisitos**
+### Hardware Recomendado
+- **CPU**: 2+ cores
+- **RAM**: 4GB+
+- **Storage**: 10GB+ livre
+- **Rede**: Conexão estável com internet
 
-#### **Sistema Operacional**
-- **Linux**: Ubuntu 20.04+ (recomendado)
-- **macOS**: 10.15+ 
-- **Windows**: 10+ (com WSL recomendado)
+## 🚀 Início Rápido
 
-#### **Software Necessário**
+### 1. Clonar o Repositório
 ```bash
-# Go 1.25+
-go version
-
-# Git
-git --version
-
-# Make (opcional)
-make --version
+git clone https://github.com/your-org/ordm-blockchain.git
+cd ordm-blockchain
 ```
 
-### **2. Instalação**
-
-#### **Opção 1: Binário Pré-compilado**
+### 2. Rodar Node/Minerador Integrado
 ```bash
-# Baixar binários
-wget https://github.com/seu-usuario/ordm-main/releases/download/v1.0.0-testnet/ordm-node-linux
-wget https://github.com/seu-usuario/ordm-main/releases/download/v1.0.0-testnet/ordm-explorer-linux
+# Rodar apenas como node (padrão)
+./scripts/run-node.sh
 
-# Tornar executáveis
-chmod +x ordm-node-linux ordm-explorer-linux
+# Rodar apenas como minerador (machineID gerado automaticamente)
+./scripts/run-node.sh --mode miner
+
+# Rodar node + minerador simultaneamente
+./scripts/run-node.sh --mode both --miner-threads 4
+
+# Rodar com mineração habilitada e nome personalizado
+./scripts/run-node.sh --mining --miner-name my-miner
 ```
 
-#### **Opção 2: Compilar do Código Fonte**
+### 3. MachineID Automático
+Na primeira execução, o sistema gera automaticamente:
+- **MachineID**: Identificador único da máquina (criptografado)
+- **MinerID**: Derivado do machineID para identificação na rede
+- **Arquivo**: `data/testnet/machine_id.json` (persistente)
+
+## 📖 Guias Detalhados
+
+### 🔧 Rodando seu Node da Testnet
+
+#### Opções de Configuração
 ```bash
-# Clonar repositório
-git clone https://github.com/seu-usuario/ordm-main.git
-cd ordm-main
+./scripts/run-node.sh [opções]
 
-# Baixar dependências
-go mod tidy
-
-# Compilar
-go build -o ordm-node ./cmd/node
-go build -o ordm-explorer ./cmd/explorer
+Opções:
+  -n, --network NETWORK    Rede (testnet/mainnet) [padrão: testnet]
+  -p, --port PORT          Porta HTTP [padrão: 8080]
+  --p2p-port PORT          Porta P2P [padrão: 3000]
+  --rpc-port PORT          Porta RPC [padrão: 8081]
+  -d, --data PATH          Caminho para dados [padrão: ./data/testnet]
+  -c, --config FILE        Arquivo de configuração
+  -g, --genesis FILE       Arquivo do bloco genesis
+  --max-peers NUM          Máximo de peers [padrão: 50]
+  --block-time DURATION    Tempo entre blocos (0 = sem mineração automática)
+  --difficulty NUM         Dificuldade de mineração [padrão: 4]
+  --mode MODE              Modo de operação (node/miner/both) [padrão: node]
+  --mining                 Habilitar mineração
+  --miner-key KEY          Chave privada do minerador (auto-gerada se não fornecida)
+  --miner-threads NUM      Número de threads de mineração [padrão: 1]
+  --miner-name NAME        Nome do minerador [padrão: ordm-node]
 ```
 
-### **3. Configuração**
-
-#### **Criar Arquivo de Configuração**
+#### Exemplos de Uso
 ```bash
-mkdir -p ~/.ordm-testnet
+# Node básico da testnet
+./scripts/run-node.sh
+
+# Node com mineração automática (30s entre blocos)
+./scripts/run-node.sh --block-time 30s
+
+# Node em portas específicas
+./scripts/run-node.sh --port 9090 --p2p-port 4000 --rpc-port 9091
+
+# Node com dificuldade personalizada
+./scripts/run-node.sh --difficulty 6
+
+# Apenas minerador (machineID gerado automaticamente)
+./scripts/run-node.sh --mode miner --miner-threads 4
+
+# Node + minerador simultaneamente
+./scripts/run-node.sh --mode both --miner-name my-miner
+
+# Mineração com nome personalizado
+./scripts/run-node.sh --mining --miner-name my-miner --miner-threads 2
 ```
 
-```json
-# ~/.ordm-testnet/config.json
-{
-    "network": "testnet",
-    "node": {
-        "port": 3001,
-        "api_port": 8080,
-        "max_peers": 50,
-        "heartbeat": 30
-    },
-    "seed_nodes": [
-        "/ip4/18.188.123.45/tcp/3001/p2p/QmSeedNode1",
-        "/ip4/52.15.67.89/tcp/3001/p2p/QmSeedNode2",
-        "/ip4/34.201.234.56/tcp/3001/p2p/QmSeedNode3"
-    ],
-    "faucet": {
-        "enabled": true,
-        "max_amount": 50,
-        "daily_limit": 100
-    },
-    "mining": {
-        "enabled": true,
-        "difficulty": 2,
-        "reward": 50
+### ⛏️ Minerando na Testnet
+
+#### MachineID Automático
+O sistema gera automaticamente na primeira execução:
+- **MachineID**: Identificador único da máquina baseado em hardware
+- **MinerID**: Derivado do machineID para identificação na rede
+- **Persistência**: Salvo em `data/testnet/machine_id.json`
+
+#### Exemplos de Mineração
+```bash
+# Mineração básica (machineID gerado automaticamente)
+./scripts/run-node.sh --mode miner
+
+# Mineração com múltiplas threads
+./scripts/run-node.sh --mode miner --miner-threads 4
+
+# Node + minerador simultaneamente
+./scripts/run-node.sh --mode both --miner-name my-miner
+
+# Mineração com nome personalizado
+./scripts/run-node.sh --mining --miner-name my-miner --miner-threads 2
+```
+
+### 🔌 Enviando Transações via RPC/SDK
+
+#### Usando o SDK Go
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+    "ordm-main/pkg/sdk"
+)
+
+func main() {
+    // Criar cliente
+    client := sdk.NewORDMClient("http://localhost:8081")
+    
+    // Enviar transação
+    result, err := client.SendTransaction(
+        "from_address",
+        "to_address", 
+        1000, // amount
+        1,    // fee
+        "data",
+        "signature",
+    )
+    
+    if err != nil {
+        log.Fatal(err)
     }
+    
+    fmt.Printf("Transação enviada: %v\n", result)
 }
 ```
 
-### **4. Executar o Node**
-
-#### **Iniciar Node Básico**
+#### Usando cURL
 ```bash
-./ordm-node --config ~/.ordm-testnet/config.json
-```
+# Obter informações da blockchain
+curl http://localhost:8081/api/v1/blockchain/info
 
-#### **Iniciar com Interface Web**
-```bash
-./ordm-node --config ~/.ordm-testnet/config.json --web --port 3000
-```
+# Obter transações pendentes
+curl http://localhost:8081/api/v1/transactions/pending
 
-#### **Iniciar Explorer**
-```bash
-./ordm-explorer --port 8080
-```
-
-## 💰 Usando o Faucet
-
-### **Obter Tokens de Teste**
-
-#### **Via API REST**
-```bash
-curl -X POST https://testnet.ordm.com/api/testnet/faucet \
+# Enviar transação
+curl -X POST http://localhost:8081/api/v1/transactions/send \
   -H "Content-Type: application/json" \
   -d '{
-    "address": "sua_wallet_address_aqui",
-    "amount": 50
+    "from": "from_address",
+    "to": "to_address",
+    "amount": 1000,
+    "fee": 1,
+    "data": "transaction data",
+    "signature": "signature"
   }'
 ```
 
-#### **Via Interface Web**
-1. Acesse: `https://testnet.ordm.com/faucet`
-2. Digite seu endereço de wallet
-3. Clique em "Request Tokens"
-4. Aguarde a confirmação
+## 🐳 Docker Compose
 
-#### **Limites do Faucet**
-- **Por Requisição**: 50 tokens
-- **Por Hora**: 1 requisição por IP
-- **Por Dia**: 100 tokens por IP
-- **Validação**: Endereço deve ser válido (26-42 caracteres hex)
+Para rodar múltiplos nodes rapidamente:
 
-### **Verificar Saldo**
 ```bash
-curl https://testnet.ordm.com/api/testnet/balances/sua_wallet_address_aqui
-```
+# Subir 3 nodes + 1 minerador
+docker-compose up -d
 
-## ⛏️ Mineração na Testnet
+# Ver logs
+docker-compose logs -f
 
-### **Iniciar Mineração**
-```bash
-# Via linha de comando
-./ordm-node --mining --difficulty 2
-
-# Via interface web
-# Acesse http://localhost:3000 e clique em "Start Mining"
-```
-
-### **Configurações de Mineração**
-- **Dificuldade**: 2 (reduzida para testes)
-- **Recompensa**: 50 tokens por bloco
-- **Tempo por Bloco**: ~10 segundos
-- **Stake Mínimo**: 100 tokens
-
-### **Monitorar Mineração**
-```bash
-# Ver logs em tempo real
-tail -f ~/.ordm-testnet/logs/mining.log
-
-# Ver estatísticas via API
-curl http://localhost:8080/api/testnet/stats
-```
-
-## 🏆 Sistema de Staking
-
-### **Fazer Stake**
-```bash
-# Via API
-curl -X POST http://localhost:8080/api/testnet/stake \
-  -H "Content-Type: application/json" \
-  -d '{
-    "address": "sua_wallet_address",
-    "amount": 100
-  }'
-```
-
-### **Benefícios do Staking**
-- **APY**: 5% base + 2% bônus para validators
-- **Validação**: Participar na validação de blocos
-- **Governança**: Votar em propostas da rede
-- **Recompensas**: Tokens adicionais por validação
-
-## 🌐 Explorer da Testnet
-
-### **Acessar Explorer**
-- **URL**: `https://testnet.ordm.com`
-- **Funcionalidades**:
-  - Visualizar blocos em tempo real
-  - Consultar transações
-  - Ver saldos de wallets
-  - Estatísticas da rede
-  - Histórico de staking
-
-### **Endpoints Públicos**
-```bash
-# Status da rede
-curl https://testnet.ordm.com/api/testnet/status
-
-# Lista de blocos
-curl https://testnet.ordm.com/api/testnet/blocks
-
-# Transações recentes
-curl https://testnet.ordm.com/api/testnet/transactions
-
-# Seed nodes
-curl https://testnet.ordm.com/api/testnet/seed-nodes
-```
-
-## 🔗 Conectar à Rede
-
-### **Seed Nodes Disponíveis**
-```
-/ip4/18.188.123.45/tcp/3001/p2p/QmSeedNode1  (US East)
-/ip4/52.15.67.89/tcp/3001/p2p/QmSeedNode2    (US West)
-/ip4/34.201.234.56/tcp/3001/p2p/QmSeedNode3  (EU West)
-```
-
-### **Configurar Conexão**
-```bash
-# Adicionar seed nodes manualmente
-./ordm-node --peers "/ip4/18.188.123.45/tcp/3001/p2p/QmSeedNode1"
-
-# Ou usar configuração automática
-./ordm-node --auto-discover
+# Parar todos os serviços
+docker-compose down
 ```
 
 ## 📊 Monitoramento
 
-### **Logs do Sistema**
+### Endpoints de Status
+- `GET /api/v1/blockchain/info` - Informações gerais
+- `GET /api/v1/blockchain/status` - Status da rede
+- `GET /api/v1/peers` - Lista de peers conectados
+- `GET /api/v1/mempool` - Transações pendentes
+
+### Logs
+Os logs são exibidos no console. Para salvar em arquivo:
 ```bash
-# Logs do node
-tail -f ~/.ordm-testnet/logs/node.log
-
-# Logs de mineração
-tail -f ~/.ordm-testnet/logs/mining.log
-
-# Logs de rede
-tail -f ~/.ordm-testnet/logs/network.log
+./scripts/run-node.sh > node.log 2>&1 &
+./scripts/run-miner.sh --miner-key abc123 > miner.log 2>&1 &
 ```
 
-### **Métricas via API**
+## 🔧 Configuração Avançada
+
+### Arquivo de Configuração
+Edite `config/testnet.json` para personalizar:
+- Parâmetros de consenso
+- Configurações P2P
+- Limites de rede
+- Configurações de segurança
+
+### Bloco Genesis
+O arquivo `genesis/testnet.json` define:
+- Supply inicial
+- Endereços premine
+- Configurações iniciais
+
+## 🚨 Solução de Problemas
+
+### Node não inicia
 ```bash
-# Status geral
-curl http://localhost:8080/api/testnet/status
+# Verificar se Go está instalado
+go version
 
-# Estatísticas do faucet
-curl http://localhost:8080/api/testnet/faucet/stats
+# Verificar se as portas estão livres
+netstat -an | grep :8080
+netstat -an | grep :3000
 
-# Informações da rede
-curl http://localhost:8080/api/testnet/network
+# Verificar permissões
+ls -la scripts/run-node.sh
 ```
 
-## 🛠️ Desenvolvimento
-
-### **API para Desenvolvedores**
-
-#### **Endpoints Principais**
+### Minerador não conecta
 ```bash
-# Saúde da rede
-GET /api/testnet/status
+# Verificar se o node está rodando
+curl http://localhost:8081/api/v1/blockchain/info
 
-# Faucet
-POST /api/testnet/faucet
-GET /api/testnet/faucet/stats
-GET /api/testnet/faucet/history
-
-# Seed nodes
-GET /api/testnet/seed-nodes
-GET /api/testnet/peers
-
-# Rede
-GET /api/testnet/network
-```
-
-#### **Exemplo de Integração**
-```javascript
-// JavaScript/Node.js
-const axios = require('axios');
-
-// Obter tokens do faucet
-async function getTestTokens(address) {
-    try {
-        const response = await axios.post('https://testnet.ordm.com/api/testnet/faucet', {
-            address: address,
-            amount: 50
-        });
-        return response.data;
-    } catch (error) {
-        console.error('Erro no faucet:', error.response.data);
-    }
-}
-
-// Verificar status da rede
-async function getNetworkStatus() {
-    const response = await axios.get('https://testnet.ordm.com/api/testnet/status');
-    return response.data;
-}
-```
-
-### **SDK para Desenvolvedores**
-```bash
-# Instalar SDK (quando disponível)
-go get github.com/seu-usuario/ordm-sdk
-
-# Exemplo de uso
-package main
-
-import (
-    "github.com/seu-usuario/ordm-sdk/client"
-)
-
-func main() {
-    // Conectar à testnet
-    client := client.NewTestnetClient()
-    
-    // Obter saldo
-    balance, err := client.GetBalance("sua_wallet_address")
-    
-    // Enviar transação
-    tx, err := client.SendTransaction("from", "to", 100)
-}
-```
-
-## 🔐 Segurança
-
-### **Boas Práticas**
-- **Backup**: Faça backup regular das suas wallets
-- **Testes**: Use apenas tokens de teste
-- **Monitoramento**: Monitore logs e métricas
-- **Atualizações**: Mantenha o software atualizado
-
-### **Rate Limiting**
-- **API**: 100 requisições/minuto por IP
-- **Faucet**: 1 requisição/hora por IP
-- **P2P**: 1000 mensagens/minuto por peer
-
-## 🐛 Troubleshooting
-
-### **Problemas Comuns**
-
-#### **Node não conecta**
-```bash
 # Verificar conectividade
-ping 18.188.123.45
+nc -zv localhost 8081
 
-# Verificar portas
-telnet 18.188.123.45 3001
-
-# Verificar logs
-tail -f ~/.ordm-testnet/logs/node.log
+# Verificar logs do node
+tail -f node.log
 ```
 
-#### **Faucet não funciona**
+### Problemas de Rede P2P
 ```bash
-# Verificar rate limit
-curl https://testnet.ordm.com/api/testnet/faucet/stats
+# Verificar firewall
+sudo ufw status
 
-# Verificar endereço
-# Deve ter entre 26-42 caracteres hex
-```
+# Verificar portas P2P
+netstat -an | grep :3000
 
-#### **Mineração não lucrativa**
-```bash
-# Verificar dificuldade
-curl http://localhost:8080/api/testnet/stats
-
-# Verificar hash rate
-# Deve ser > 1 H/s para ser lucrativo
-```
-
-### **Logs de Erro**
-```bash
-# Erro comum: "connection refused"
-# Solução: Verificar se seed nodes estão online
-
-# Erro comum: "insufficient balance"
-# Solução: Usar faucet para obter tokens
-
-# Erro comum: "rate limit exceeded"
-# Solução: Aguardar 1 hora entre requisições
+# Adicionar peers manualmente (se necessário)
+# Editar config/testnet.json
 ```
 
 ## 📞 Suporte
 
-### **Recursos de Ajuda**
-- **Documentação**: Este README
-- **Explorer**: `https://testnet.ordm.com`
-- **API Docs**: `https://testnet.ordm.com/api/docs`
-- **Logs**: Sistema de logs detalhado
+### Comunidade
+- **Discord**: [Link do Discord]
+- **Telegram**: [Link do Telegram]
+- **GitHub Issues**: [Link do GitHub]
 
-### **Canais de Comunidade**
-- **Discord**: `https://discord.gg/ordm-testnet`
-- **Telegram**: `@ordm_testnet`
-- **GitHub**: Issues no repositório
-- **Email**: `testnet@ordm.com`
+### Recursos
+- **Documentação**: [Link da docs]
+- **API Reference**: [Link da API]
+- **SDK Examples**: [Link dos exemplos]
 
-### **Reportar Bugs**
-```bash
-# Incluir informações:
-# - Versão do software
-# - Sistema operacional
-# - Logs de erro
-# - Passos para reproduzir
-# - Comportamento esperado vs atual
-```
+## 📄 Licença
 
-## 🎯 Próximos Passos
-
-### **Roadmap da Testnet**
-- [ ] **Fase 1**: Rede básica (✅ Concluído)
-- [ ] **Fase 2**: Faucet e explorer (✅ Concluído)
-- [ ] **Fase 3**: Smart contracts básicos
-- [ ] **Fase 4**: DeFi protocols
-- [ ] **Fase 5**: Governança descentralizada
-
-### **Migração para Mainnet**
-- **Data Estimada**: Q2 2024
-- **Processo**: Snapshot da testnet
-- **Tokens**: 1:1 para mainnet
-- **Stake**: Migração automática
+Este projeto está licenciado sob a MIT License - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
 ---
 
-## 🎉 Conclusão
-
-A **ORDM Testnet** oferece um ambiente completo para testar e desenvolver na blockchain 2-layer. Com faucet, explorer público e seed nodes estáveis, você pode:
-
-✅ **Testar funcionalidades** antes da mainnet  
-✅ **Desenvolver aplicações** com tokens gratuitos  
-✅ **Participar da mineração** com dificuldade reduzida  
-✅ **Validar contratos** em ambiente seguro  
-✅ **Contribuir para a rede** como validator  
-
-**🚀 Junte-se à comunidade e ajude a construir o futuro da blockchain!**
+**🎉 Parabéns! Você está pronto para participar da ORDM Testnet!**

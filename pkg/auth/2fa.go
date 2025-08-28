@@ -29,17 +29,17 @@ func NewTwoFactorAuth() *TwoFactorAuth {
 
 // GeneratePIN gera novo PIN 2FA
 func (tfa *TwoFactorAuth) GeneratePIN() string {
-	// Gerar 6 dígitos aleatórios
-	bytes := make([]byte, 3)
+	// Gerar 8 dígitos aleatórios (melhorado)
+	bytes := make([]byte, 4)
 	rand.Read(bytes)
 
-	// Converter para número de 6 dígitos
-	num := int(bytes[0])<<16 | int(bytes[1])<<8 | int(bytes[2])
-	pin := fmt.Sprintf("%06d", num%1000000)
+	// Converter para número de 8 dígitos
+	num := int(bytes[0])<<24 | int(bytes[1])<<16 | int(bytes[2])<<8 | int(bytes[3])
+	pin := fmt.Sprintf("%08d", num%100000000)
 
 	tfa.CurrentPIN = pin
 	tfa.GeneratedAt = time.Now()
-	tfa.ExpiresAt = time.Now().Add(10 * time.Minute) // 10 minutos
+	tfa.ExpiresAt = time.Now().Add(60 * time.Second) // 60 segundos (corrigido)
 	tfa.Attempts = 0
 	tfa.IsAuthenticated = false
 

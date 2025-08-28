@@ -13,55 +13,55 @@ import (
 
 // RealBlock representa um bloco real da blockchain
 type RealBlock struct {
-	Header       BlockHeader   `json:"header"`
-	Transactions []Transaction `json:"transactions"`
-	MinerProof   MinerProof    `json:"miner_proof"`
-	Signature    []byte        `json:"signature"`
-	mu           sync.RWMutex  `json:"-"`
+	Header       RealBlockHeader `json:"header"`
+	Transactions []Transaction   `json:"transactions"`
+	MinerProof   MinerProof      `json:"miner_proof"`
+	Signature    []byte          `json:"signature"`
+	mu           sync.RWMutex    `json:"-"`
 }
 
-// BlockHeader contém os metadados do bloco
-type BlockHeader struct {
-	Number       int64  `json:"number"`
-	ParentHash   []byte `json:"parent_hash"`
-	Timestamp    int64  `json:"timestamp"`
-	Difficulty   uint64 `json:"difficulty"`
-	Nonce        uint64 `json:"nonce"`
-	MerkleRoot   []byte `json:"merkle_root"`
-	MinerID      string `json:"miner_id"`
-	Version      uint32 `json:"version"`
+// RealBlockHeader contém os metadados do bloco real
+type RealBlockHeader struct {
+	Number     int64  `json:"number"`
+	ParentHash []byte `json:"parent_hash"`
+	Timestamp  int64  `json:"timestamp"`
+	Difficulty uint64 `json:"difficulty"`
+	Nonce      uint64 `json:"nonce"`
+	MerkleRoot []byte `json:"merkle_root"`
+	MinerID    string `json:"miner_id"`
+	Version    uint32 `json:"version"`
 }
 
 // MinerProof contém a prova de trabalho do minerador
 type MinerProof struct {
-	Hash         []byte `json:"hash"`
-	Nonce        uint64 `json:"nonce"`
-	Difficulty   uint64 `json:"difficulty"`
-	Timestamp    int64  `json:"timestamp"`
-	MinerID      string `json:"miner_id"`
-	Target       []byte `json:"target"`
-	WorkDone     string `json:"work_done"`
+	Hash       []byte `json:"hash"`
+	Nonce      uint64 `json:"nonce"`
+	Difficulty uint64 `json:"difficulty"`
+	Timestamp  int64  `json:"timestamp"`
+	MinerID    string `json:"miner_id"`
+	Target     []byte `json:"target"`
+	WorkDone   string `json:"work_done"`
 }
 
 // RealTransaction representa uma transação real
 type RealTransaction struct {
-	ID          string `json:"id"`
-	From        string `json:"from"`
-	To          string `json:"to"`
-	Amount      int64  `json:"amount"`
-	Fee         int64  `json:"fee"`
-	Nonce       uint64 `json:"nonce"`
-	Data        string `json:"data"`
-	Signature   []byte `json:"signature"`
-	Timestamp   int64  `json:"timestamp"`
-	BlockHash   string `json:"block_hash,omitempty"`
-	Status      string `json:"status"` // "pending", "confirmed", "failed"
+	ID        string `json:"id"`
+	From      string `json:"from"`
+	To        string `json:"to"`
+	Amount    int64  `json:"amount"`
+	Fee       int64  `json:"fee"`
+	Nonce     uint64 `json:"nonce"`
+	Data      string `json:"data"`
+	Signature []byte `json:"signature"`
+	Timestamp int64  `json:"timestamp"`
+	BlockHash string `json:"block_hash,omitempty"`
+	Status    string `json:"status"` // "pending", "confirmed", "failed"
 }
 
 // NewRealBlock cria um novo bloco real
 func NewRealBlock(parentHash []byte, number int64, minerID string, difficulty uint64) *RealBlock {
 	block := &RealBlock{
-		Header: BlockHeader{
+		Header: RealBlockHeader{
 			Number:     number,
 			ParentHash: parentHash,
 			Timestamp:  time.Now().Unix(),
@@ -77,10 +77,10 @@ func NewRealBlock(parentHash []byte, number int64, minerID string, difficulty ui
 			MinerID:    minerID,
 		},
 	}
-	
+
 	// Calcular target baseado na dificuldade
 	block.MinerProof.Target = calculateTarget(difficulty)
-	
+
 	return block
 }
 
@@ -88,18 +88,18 @@ func NewRealBlock(parentHash []byte, number int64, minerID string, difficulty ui
 func (rb *RealBlock) AddTransaction(tx Transaction) error {
 	rb.mu.Lock()
 	defer rb.mu.Unlock()
-	
+
 	// Validar transação
 	if err := rb.validateTransaction(tx); err != nil {
 		return fmt.Errorf("transação inválida: %v", err)
 	}
-	
+
 	// Adicionar transação
 	rb.Transactions = append(rb.Transactions, tx)
-	
+
 	// Recalcular merkle root
 	rb.Header.MerkleRoot = rb.calculateMerkleRoot()
-	
+
 	return nil
 }
 
@@ -107,20 +107,20 @@ func (rb *RealBlock) AddTransaction(tx Transaction) error {
 func (rb *RealBlock) MineBlock(targetDifficulty uint64) error {
 	rb.mu.Lock()
 	defer rb.mu.Unlock()
-	
+
 	// Calcular hash inicial
 	rb.Header.MerkleRoot = rb.calculateMerkleRoot()
-	
+
 	// Executar PoW
 	target := calculateTarget(targetDifficulty)
-	
+
 	for nonce := uint64(0); nonce < 0xffffffffffffffff; nonce++ {
 		rb.Header.Nonce = nonce
 		rb.MinerProof.Nonce = nonce
-		
+
 		// Calcular hash do bloco
 		hash := rb.calculateHash()
-		
+
 		// Verificar se o hash atende ao target
 		if isHashValid(hash, target) {
 			rb.MinerProof.Hash = hash
@@ -128,7 +128,7 @@ func (rb *RealBlock) MineBlock(targetDifficulty uint64) error {
 			return nil
 		}
 	}
-	
+
 	return fmt.Errorf("mineração timeout - não foi possível encontrar nonce válido")
 }
 
@@ -136,7 +136,7 @@ func (rb *RealBlock) MineBlock(targetDifficulty uint64) error {
 func (rb *RealBlock) SignBlock(signature []byte) {
 	rb.mu.Lock()
 	defer rb.mu.Unlock()
-	
+
 	rb.Signature = signature
 }
 
@@ -144,26 +144,26 @@ func (rb *RealBlock) SignBlock(signature []byte) {
 func (rb *RealBlock) VerifyBlock() error {
 	rb.mu.RLock()
 	defer rb.mu.RUnlock()
-	
+
 	// Verificar hash do bloco
 	calculatedHash := rb.calculateHash()
 	if !isHashValid(calculatedHash, rb.MinerProof.Target) {
 		return fmt.Errorf("hash do bloco não atende ao target de dificuldade")
 	}
-	
+
 	// Verificar merkle root
 	calculatedMerkleRoot := rb.calculateMerkleRoot()
 	if !bytes.Equal(calculatedMerkleRoot, rb.Header.MerkleRoot) {
 		return fmt.Errorf("merkle root inválido")
 	}
-	
+
 	// Verificar transações
 	for i, tx := range rb.Transactions {
 		if err := rb.validateTransaction(tx); err != nil {
 			return fmt.Errorf("transação %d inválida: %v", i, err)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -171,7 +171,7 @@ func (rb *RealBlock) VerifyBlock() error {
 func (rb *RealBlock) GetBlockHash() []byte {
 	rb.mu.RLock()
 	defer rb.mu.RUnlock()
-	
+
 	return rb.calculateHash()
 }
 
@@ -204,7 +204,7 @@ func (rb *RealBlock) calculateMerkleRoot() []byte {
 		// Se não há transações, usar hash vazio
 		return make([]byte, 32)
 	}
-	
+
 	// Para simplificar, usar hash da primeira transação
 	// Em uma implementação real, seria uma árvore Merkle completa
 	txData, _ := json.Marshal(rb.Transactions[0])
@@ -218,18 +218,18 @@ func (rb *RealBlock) validateTransaction(tx Transaction) error {
 	if tx.From == "" || tx.To == "" {
 		return fmt.Errorf("campos From e To são obrigatórios")
 	}
-	
+
 	if tx.Amount <= 0 {
 		return fmt.Errorf("valor deve ser maior que zero")
 	}
-	
+
 	if tx.Fee < 0 {
 		return fmt.Errorf("taxa não pode ser negativa")
 	}
-	
+
 	// Verificar assinatura (se fornecida)
 	// TODO: Implementar verificação de assinatura quando necessário
-	
+
 	return nil
 }
 
@@ -250,16 +250,16 @@ func isHashValid(hash, target []byte) bool {
 func (rb *RealBlock) ToJSON() ([]byte, error) {
 	rb.mu.RLock()
 	defer rb.mu.RUnlock()
-	
+
 	// Estrutura para serialização
 	type blockJSON struct {
-		Header       BlockHeader   `json:"header"`
-		Transactions []Transaction `json:"transactions"`
-		MinerProof   MinerProof    `json:"miner_proof"`
-		Signature    string        `json:"signature"`
-		BlockHash    string        `json:"block_hash"`
+		Header       RealBlockHeader `json:"header"`
+		Transactions []Transaction   `json:"transactions"`
+		MinerProof   MinerProof      `json:"miner_proof"`
+		Signature    string          `json:"signature"`
+		BlockHash    string          `json:"block_hash"`
 	}
-	
+
 	block := blockJSON{
 		Header:       rb.Header,
 		Transactions: rb.Transactions,
@@ -267,7 +267,7 @@ func (rb *RealBlock) ToJSON() ([]byte, error) {
 		Signature:    hex.EncodeToString(rb.Signature),
 		BlockHash:    rb.GetBlockHashString(),
 	}
-	
+
 	return json.MarshalIndent(block, "", "  ")
 }
 
@@ -275,31 +275,31 @@ func (rb *RealBlock) ToJSON() ([]byte, error) {
 func (rb *RealBlock) FromJSON(data []byte) error {
 	rb.mu.Lock()
 	defer rb.mu.Unlock()
-	
+
 	// Estrutura para deserialização
 	type blockJSON struct {
-		Header       BlockHeader   `json:"header"`
-		Transactions []Transaction `json:"transactions"`
-		MinerProof   MinerProof    `json:"miner_proof"`
-		Signature    string        `json:"signature"`
+		Header       RealBlockHeader `json:"header"`
+		Transactions []Transaction   `json:"transactions"`
+		MinerProof   MinerProof      `json:"miner_proof"`
+		Signature    string          `json:"signature"`
 	}
-	
+
 	var block blockJSON
 	if err := json.Unmarshal(data, &block); err != nil {
 		return err
 	}
-	
+
 	// Converter signature
 	signature, err := hex.DecodeString(block.Signature)
 	if err != nil {
 		return fmt.Errorf("signature inválida: %v", err)
 	}
-	
+
 	rb.Header = block.Header
 	rb.Transactions = block.Transactions
 	rb.MinerProof = block.MinerProof
 	rb.Signature = signature
-	
+
 	return nil
 }
 
@@ -307,18 +307,18 @@ func (rb *RealBlock) FromJSON(data []byte) error {
 func (rb *RealBlock) GetBlockInfo() map[string]interface{} {
 	rb.mu.RLock()
 	defer rb.mu.RUnlock()
-	
+
 	return map[string]interface{}{
-		"number":         rb.Header.Number,
-		"hash":           rb.GetBlockHashString(),
-		"parent_hash":    rb.GetParentHashString(),
-		"timestamp":      rb.Header.Timestamp,
-		"difficulty":     rb.Header.Difficulty,
-		"nonce":          rb.Header.Nonce,
-		"merkle_root":    rb.GetMerkleRootString(),
-		"miner_id":       rb.Header.MinerID,
-		"transactions":   len(rb.Transactions),
-		"signature":      hex.EncodeToString(rb.Signature),
-		"work_done":      rb.MinerProof.WorkDone,
+		"number":       rb.Header.Number,
+		"hash":         rb.GetBlockHashString(),
+		"parent_hash":  rb.GetParentHashString(),
+		"timestamp":    rb.Header.Timestamp,
+		"difficulty":   rb.Header.Difficulty,
+		"nonce":        rb.Header.Nonce,
+		"merkle_root":  rb.GetMerkleRootString(),
+		"miner_id":     rb.Header.MinerID,
+		"transactions": len(rb.Transactions),
+		"signature":    hex.EncodeToString(rb.Signature),
+		"work_done":    rb.MinerProof.WorkDone,
 	}
 }

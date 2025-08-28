@@ -1,0 +1,73 @@
+{
+  "network": {
+    "id": "ordm-testnet-v1",
+    "name": "ORDM Testnet",
+    "version": "1.0.0",
+    "description": "Rede de teste pública da ORDM Blockchain"
+  },
+  "consensus": {
+    "algorithm": "proof-of-work",
+    "difficulty": 4,
+    "block_time": "30s",
+    "max_block_size": 1048576,
+    "max_transactions_per_block": 1000
+  },
+  "p2p": {
+    "port": 3000,
+    "max_peers": 50,
+    "discovery_interval": "30s",
+    "connection_timeout": "10s",
+    "seed_nodes": [
+      "127.0.0.1:3000",
+      "127.0.0.1:3001",
+      "127.0.0.1:3002"
+    ]
+  },
+  "rpc": {
+    "port": 8081,
+    "host": "0.0.0.0",
+    "cors_enabled": true,
+    "rate_limit": {
+      "requests_per_minute": 1000,
+      "burst_size": 100
+    }
+  },
+  "mining": {
+    "enabled": true,
+    "reward": 100,
+    "fee_percentage": 0.01,
+    "min_transaction_fee": 1
+  },
+  "storage": {
+    "data_path": "./data/testnet",
+    "max_disk_usage": "10GB",
+    "backup_interval": "24h"
+  },
+  "security": {
+    "max_transaction_age": "24h",
+    "min_transaction_amount": 1,
+    "max_transaction_amount": 1000000,
+    "blacklist_enabled": false
+  },
+  "monitoring": {
+    "metrics_enabled": true,
+    "log_level": "info",
+    "health_check_interval": "30s"
+  },
+  "genesis": {
+    "file": "genesis/testnet.json",
+    "supply": 10000000,
+    "premine_addresses": [
+      {
+        "address": "0000000000000000000000000000000000000000",
+        "amount": 1000000,
+        "description": "Fundos para desenvolvimento"
+      },
+      {
+        "address": "0000000000000000000000000000000000000001",
+        "amount": 1000000,
+        "description": "Fundos para comunidade"
+      }
+    ]
+  }
+}

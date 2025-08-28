@@ -1,0 +1,254 @@
+/* 📝 ORDM Matrix Typography System */
+
+/* 🎨 Classes de Fonte */
+.matrix-font {
+  font-family: var(--matrix-font-family);
+  font-weight: bold;
+  text-shadow: 0 0 5px var(--matrix-glow);
+  letter-spacing: 0.5px;
+}
+
+.matrix-font-light {
+  font-family: var(--matrix-font-family);
+  font-weight: normal;
+  text-shadow: 0 0 3px var(--matrix-glow-weak);
+  letter-spacing: 0.3px;
+}
+
+.matrix-font-heavy {
+  font-family: var(--matrix-font-family);
+  font-weight: 900;
+  text-shadow: 0 0 8px var(--matrix-glow-strong);
+  letter-spacing: 1px;
+}
+
+/* 🎨 Tamanhos de Fonte */
+.matrix-text-xs {
+  font-size: var(--matrix-font-size-small);
+  line-height: 1.4;
+}
+
+.matrix-text-sm {
+  font-size: var(--matrix-font-size-base);
+  line-height: 1.5;
+}
+
+.matrix-text-md {
+  font-size: var(--matrix-font-size-large);
+  line-height: 1.6;
+}
+
+.matrix-text-lg {
+  font-size: var(--matrix-font-size-xl);
+  line-height: 1.5;
+}
+
+.matrix-text-xl {
+  font-size: var(--matrix-font-size-xxl);
+  line-height: 1.4;
+}
+
+.matrix-text-title {
+  font-size: var(--matrix-font-size-title);
+  line-height: 1.3;
+  font-weight: 900;
+}
+
+/* 🎨 Cores de Texto */
+.matrix-text-primary {
+  color: var(--matrix-text);
+}
+
+.matrix-text-secondary {
+  color: var(--matrix-text-secondary);
+}
+
+.matrix-text-muted {
+  color: var(--matrix-text-muted);
+}
+
+.matrix-text-dim {
+  color: var(--matrix-text-dim);
+}
+
+/* 🎨 Estados de Texto */
+.matrix-text-success {
+  color: var(--matrix-success);
+  text-shadow: 0 0 5px var(--matrix-success);
+}
+
+.matrix-text-warning {
+  color: var(--matrix-warning);
+  text-shadow: 0 0 5px var(--matrix-warning);
+}
+
+.matrix-text-error {
+  color: var(--matrix-error);
+  text-shadow: 0 0 5px var(--matrix-error);
+}
+
+.matrix-text-info {
+  color: var(--matrix-info);
+  text-shadow: 0 0 5px var(--matrix-info);
+}
+
+/* 🎨 Efeitos de Texto */
+.matrix-text-glow {
+  text-shadow: 0 0 10px var(--matrix-glow-strong);
+}
+
+.matrix-text-pulse {
+  animation: matrix-text-pulse 2s ease-in-out infinite;
+}
+
+.matrix-text-flicker {
+  animation: matrix-text-flicker 3s ease-in-out infinite;
+}
+
+.matrix-text-typewriter {
+  overflow: hidden;
+  border-right: 2px solid var(--matrix-accent);
+  white-space: nowrap;
+  animation: matrix-typewriter 3s steps(40, end), matrix-blink-caret 0.75s step-end infinite;
+}
+
+/* 🎨 Títulos */
+.matrix-title {
+  font-size: var(--matrix-font-size-title);
+  font-weight: 900;
+  color: var(--matrix-accent);
+  text-shadow: 0 0 15px var(--matrix-glow-strong);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0;
+  padding: var(--matrix-spacing-md) 0;
+}
+
+.matrix-subtitle {
+  font-size: var(--matrix-font-size-xl);
+  font-weight: bold;
+  color: var(--matrix-text-secondary);
+  text-shadow: 0 0 8px var(--matrix-glow);
+  letter-spacing: 1px;
+  margin: 0;
+  padding: var(--matrix-spacing-sm) 0;
+}
+
+.matrix-heading {
+  font-size: var(--matrix-font-size-xxl);
+  font-weight: bold;
+  color: var(--matrix-text);
+  text-shadow: 0 0 10px var(--matrix-glow);
+  letter-spacing: 1px;
+  margin: 0;
+  padding: var(--matrix-spacing-sm) 0;
+}
+
+/* 🎨 Parágrafos */
+.matrix-paragraph {
+  font-size: var(--matrix-font-size-base);
+  line-height: 1.6;
+  color: var(--matrix-text-secondary);
+  margin: var(--matrix-spacing-sm) 0;
+  text-shadow: 0 0 3px var(--matrix-glow-weak);
+}
+
+.matrix-paragraph-small {
+  font-size: var(--matrix-font-size-small);
+  line-height: 1.5;
+  color: var(--matrix-text-muted);
+  margin: var(--matrix-spacing-xs) 0;
+}
+
+/* 🎨 Labels e Captions */
+.matrix-label {
+  font-size: var(--matrix-font-size-small);
+  font-weight: bold;
+  color: var(--matrix-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--matrix-spacing-xs);
+}
+
+.matrix-caption {
+  font-size: var(--matrix-font-size-small);
+  color: var(--matrix-text-muted);
+  font-style: italic;
+  margin-top: var(--matrix-spacing-xs);
+}
+
+/* 🎨 Código e Terminal */
+.matrix-code {
+  font-family: var(--matrix-font-family);
+  font-size: var(--matrix-font-size-small);
+  background: var(--matrix-bg-secondary);
+  color: var(--matrix-text);
+  padding: var(--matrix-spacing-sm);
+  border: 1px solid var(--matrix-border);
+  border-radius: var(--matrix-border-radius-sm);
+  box-shadow: var(--matrix-shadow-inset);
+}
+
+.matrix-terminal-text {
+  font-family: var(--matrix-font-family);
+  font-size: var(--matrix-font-size-base);
+  color: var(--matrix-text);
+  text-shadow: 0 0 5px var(--matrix-glow);
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+/* 🎨 Links */
+.matrix-link {
+  color: var(--matrix-accent);
+  text-decoration: none;
+  text-shadow: 0 0 3px var(--matrix-glow);
+  transition: all var(--matrix-transition-fast);
+}
+
+.matrix-link:hover {
+  color: var(--matrix-accent-secondary);
+  text-shadow: 0 0 8px var(--matrix-glow-strong);
+  text-decoration: underline;
+}
+
+.matrix-link:active {
+  color: var(--matrix-accent-tertiary);
+}
+
+/* 🎨 Listas */
+.matrix-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.matrix-list-item {
+  padding: var(--matrix-spacing-xs) 0;
+  color: var(--matrix-text-secondary);
+  position: relative;
+  padding-left: var(--matrix-spacing-md);
+}
+
+.matrix-list-item::before {
+  content: ">";
+  color: var(--matrix-accent);
+  position: absolute;
+  left: 0;
+  text-shadow: 0 0 5px var(--matrix-glow);
+}
+
+.matrix-list-item-success::before {
+  content: "✓";
+  color: var(--matrix-success);
+}
+
+.matrix-list-item-error::before {
+  content: "✗";
+  color: var(--matrix-error);
+}
+
+.matrix-list-item-warning::before {
+  content: "⚠";
+  color: var(--matrix-warning);
+}

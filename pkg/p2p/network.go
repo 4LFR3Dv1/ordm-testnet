@@ -5,6 +5,8 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"sync"
 	"time"
 
@@ -57,6 +59,14 @@ type PeerInfo struct {
 	LastSeen  time.Time `json:"last_seen"`
 	Version   string    `json:"version"`
 	Services  []string  `json:"services"`
+	Connected bool      `json:"connected"`
+}
+
+// PeerExchangeMessage representa uma mensagem de troca de peers
+type PeerExchangeMessage struct {
+	Peers     []PeerInfo `json:"peers"`
+	From      string     `json:"from"`
+	Timestamp int64      `json:"timestamp"`
 }
 
 // P2PNetwork implementa a rede peer-to-peer
@@ -68,10 +78,20 @@ type P2PNetwork struct {
 	peers           map[peer.ID]*PeerInfo
 	peersMutex      sync.RWMutex
 	messageHandlers map[string]func(Message) error
-	topics          map[string]*pubsub.Topic
-	subscriptions   map[string]*pubsub.Subscription
+	topics          map[string]interface{}
+	subscriptions   map[string]interface{}
 	logger          func(string, ...interface{})
 	port            int
+	bootstrapConfig struct {
+		BootstrapPeers []string
+		PeerExchange   bool
+		ReconnectDelay time.Duration
+	}
+	discoveryCtx       context.Context
+	reconnectTicker    *time.Ticker
+	knownPeers         map[string]time.Time
+	knownPeersMutex    sync.RWMutex
+	peerExchangeTicker *time.Ticker
 }
 
 // NewP2PNetwork cria uma nova rede P2P
@@ -100,8 +120,6 @@ func NewP2PNetwork(port int, logger func(string, ...interface{})) (*P2PNetwork, 
 		libp2p.Transport(tcp.NewTCPTransport),
 		libp2p.Transport(websocket.New),
 		libp2p.NATPortMap(),
-		libp2p.EnableAutoRelay(),
-		libp2p.EnableHolePunching(),
 	)
 	if err != nil {
 		cancel()
@@ -122,10 +140,21 @@ func NewP2PNetwork(port int, logger func(string, ...interface{})) (*P2PNetwork, 
 		cancel:          cancel,
 		peers:           make(map[peer.ID]*PeerInfo),
 		messageHandlers: make(map[string]func(Message) error),
-		topics:          make(map[string]*pubsub.Topic),
-		subscriptions:   make(map[string]*pubsub.Subscription),
+		topics:          make(map[string]interface{}),
+		subscriptions:   make(map[string]interface{}),
 		logger:          logger,
 		port:            port,
+		bootstrapConfig: struct {
+			BootstrapPeers []string
+			PeerExchange   bool
+			ReconnectDelay time.Duration
+		}{
+			BootstrapPeers: []string{},
+			PeerExchange:   false,
+			ReconnectDelay: 30 * time.Second,
+		},
+		discoveryCtx: ctx,
+		knownPeers:   make(map[string]time.Time),
 	}
 
 	// Configurar handlers de rede
@@ -134,6 +163,9 @@ func NewP2PNetwork(port int, logger func(string, ...interface{})) (*P2PNetwork, 
 
 	// Registrar handlers padrão
 	network.registerDefaultHandlers()
+
+	// Iniciar conectividade automática
+	network.startAutoConnectivity()
 
 	return network, nil
 }
@@ -217,17 +249,21 @@ func (n *P2PNetwork) Publish(topicName string, message Message) error {
 	message.Timestamp = time.Now().Unix()
 
 	// Serializar mensagem
-	data, err := json.Marshal(message)
+	messageData, err := json.Marshal(message)
 	if err != nil {
 		return fmt.Errorf("erro ao serializar mensagem: %v", err)
 	}
 
-	// Publicar
-	if err := topic.Publish(n.ctx, data); err != nil {
-		return fmt.Errorf("erro ao publicar: %v", err)
+	// Publicar mensagem via libp2p pubsub
+	if topicPub, ok := topic.(*pubsub.Topic); ok {
+		if err := topicPub.Publish(n.ctx, messageData); err != nil {
+			return fmt.Errorf("erro ao publicar mensagem: %v", err)
+		}
+	} else {
+		return fmt.Errorf("tipo de tópico inválido")
 	}
 
-	n.logger("📤 Mensagem publicada no tópico %s: %s", topicName, message.Type)
+	n.logger("📤 Publicando mensagem no tópico: %s", topicName)
 	return nil
 }
 
@@ -238,7 +274,7 @@ func (n *P2PNetwork) BroadcastBlock(block BlockMessage) error {
 		Data: block,
 	}
 
-	return n.Publish("blocks", message)
+	return n.Publish("ordm/blocks", message)
 }
 
 // BroadcastTransaction transmite uma nova transação
@@ -248,7 +284,7 @@ func (n *P2PNetwork) BroadcastTransaction(tx TransactionMessage) error {
 		Data: tx,
 	}
 
-	return n.Publish("transactions", message)
+	return n.Publish("ordm/transactions", message)
 }
 
 // GetPeers retorna lista de peers conectados
@@ -438,6 +474,11 @@ func (n *P2PNetwork) registerDefaultHandlers() {
 		n.logger("💸 Nova transação recebida: %s de %s", tx.TxHash, msg.From)
 		return nil
 	})
+
+	// Handler de troca de peers
+	n.RegisterHandler("peer_exchange", func(msg Message) error {
+		return n.handlePeerExchange(msg)
+	})
 }
 
 // networkNotifee implementa notificações de rede
@@ -480,3 +521,446 @@ func (nn *networkNotifee) Disconnected(net network.Network, conn network.Conn) {
 
 func (nn *networkNotifee) OpenedStream(network.Network, network.Stream) {}
 func (nn *networkNotifee) ClosedStream(network.Network, network.Stream) {}
+
+// ===== CONECTIVIDADE AUTOMÁTICA =====
+
+// startAutoConnectivity inicia a conectividade automática
+func (n *P2PNetwork) startAutoConnectivity() {
+	n.logger("🔄 Iniciando conectividade automática...")
+
+	// Conectar aos peers bootstrap
+	go n.connectToBootstrapPeers()
+
+	// Iniciar reconexão automática
+	go n.startAutoReconnect()
+
+	// Iniciar peer exchange
+	if n.bootstrapConfig.PeerExchange {
+		go n.startPeerExchange()
+	}
+}
+
+// startAutoReconnect inicia reconexão automática
+func (n *P2PNetwork) startAutoReconnect() {
+	n.reconnectTicker = time.NewTicker(n.bootstrapConfig.ReconnectDelay)
+	defer n.reconnectTicker.Stop()
+
+	for {
+		select {
+		case <-n.discoveryCtx.Done():
+			return
+		case <-n.reconnectTicker.C:
+			n.reconnectToKnownPeers()
+		}
+	}
+}
+
+// startPeerExchange inicia troca de peers
+func (n *P2PNetwork) startPeerExchange() {
+	n.peerExchangeTicker = time.NewTicker(2 * time.Minute)
+	defer n.peerExchangeTicker.Stop()
+
+	for {
+		select {
+		case <-n.discoveryCtx.Done():
+			return
+		case <-n.peerExchangeTicker.C:
+			n.broadcastPeerList()
+		}
+	}
+}
+
+// connectToBootstrapPeers conecta aos peers bootstrap
+func (n *P2PNetwork) connectToBootstrapPeers() {
+	n.logger("🔗 Conectando aos peers bootstrap...")
+
+	// Conectar aos peers bootstrap configurados
+	for _, peerAddr := range n.bootstrapConfig.BootstrapPeers {
+		go func(addr string) {
+			if err := n.Connect(addr); err != nil {
+				n.logger("⚠️ Falha ao conectar ao peer bootstrap %s: %v", addr, err)
+				// Adicionar à lista de peers conhecidos para tentar reconectar
+				n.addKnownPeer(addr)
+			}
+		}(peerAddr)
+	}
+
+	// Tentar conectar aos peers locais conhecidos
+	go n.connectToLocalPeers()
+}
+
+// reconnectToKnownPeers tenta reconectar aos peers conhecidos
+func (n *P2PNetwork) reconnectToKnownPeers() {
+	n.knownPeersMutex.Lock()
+	defer n.knownPeersMutex.Unlock()
+
+	now := time.Now()
+	for peerAddr, lastSeen := range n.knownPeers {
+		// Tentar reconectar se passou mais de 5 minutos
+		if now.Sub(lastSeen) > 5*time.Minute {
+			go func(addr string) {
+				if err := n.Connect(addr); err != nil {
+					n.logger("⚠️ Falha na reconexão ao peer %s: %v", addr, err)
+				} else {
+					n.logger("✅ Reconectado ao peer: %s", addr)
+					// Remover da lista de conhecidos se conectou com sucesso
+					n.knownPeersMutex.Lock()
+					delete(n.knownPeers, addr)
+					n.knownPeersMutex.Unlock()
+				}
+			}(peerAddr)
+		}
+	}
+}
+
+// addKnownPeer adiciona um peer à lista de conhecidos
+func (n *P2PNetwork) addKnownPeer(peerAddr string) {
+	n.knownPeersMutex.Lock()
+	defer n.knownPeersMutex.Unlock()
+
+	n.knownPeers[peerAddr] = time.Now()
+	n.logger("📝 Peer adicionado à lista de conhecidos: %s", peerAddr)
+}
+
+// broadcastPeerList envia lista de peers para outros nodes
+func (n *P2PNetwork) broadcastPeerList() {
+	n.peersMutex.RLock()
+	peerList := make([]PeerInfo, 0, len(n.peers))
+	for _, peer := range n.peers {
+		peerList = append(peerList, *peer)
+	}
+	n.peersMutex.RUnlock()
+
+	// Adicionar peers conhecidos
+	n.knownPeersMutex.RLock()
+	for peerAddr := range n.knownPeers {
+		peerList = append(peerList, PeerInfo{
+			ID:        peerAddr,
+			Connected: false,
+			LastSeen:  n.knownPeers[peerAddr],
+		})
+	}
+	n.knownPeersMutex.RUnlock()
+
+	message := Message{
+		Type: "peer_exchange",
+		Data: PeerExchangeMessage{
+			Peers:     peerList,
+			From:      n.host.ID().String(),
+			Timestamp: time.Now().Unix(),
+		},
+		From:      n.host.ID().String(),
+		Timestamp: time.Now().Unix(),
+	}
+
+	// Enviar para todos os tópicos
+	for topicName := range n.topics {
+		n.Publish(topicName, message)
+	}
+
+	n.logger("📤 Lista de %d peers enviada", len(peerList))
+}
+
+// handlePeerExchange processa mensagens de troca de peers
+func (n *P2PNetwork) handlePeerExchange(msg Message) error {
+	var peerExchange PeerExchangeMessage
+	if data, ok := msg.Data.(map[string]interface{}); ok {
+		exchangeData, _ := json.Marshal(data)
+		json.Unmarshal(exchangeData, &peerExchange)
+	}
+
+	n.logger("📥 Recebida lista de %d peers de %s", len(peerExchange.Peers), msg.From)
+
+	// Tentar conectar aos novos peers
+	for _, peerInfo := range peerExchange.Peers {
+		if peerInfo.ID != n.host.ID().String() {
+			// Tentar conectar se não estiver conectado
+			if !peerInfo.Connected {
+				go func(peerID string) {
+					// Tentar conectar usando o ID do peer
+					if err := n.connectToPeerByID(peerID); err != nil {
+						n.logger("⚠️ Falha ao conectar ao peer %s: %v", peerID, err)
+						n.addKnownPeer(peerID)
+					}
+				}(peerInfo.ID)
+			}
+		}
+	}
+
+	return nil
+}
+
+// connectToLocalPeers tenta conectar aos peers locais conhecidos
+func (n *P2PNetwork) connectToLocalPeers() {
+	n.logger("🔍 Tentando conectar aos peers locais...")
+
+	// Tentar conectar aos peers locais baseado na porta atual
+	// Se estamos na porta 3003, tentar conectar às portas 3004 e 3005
+	// Se estamos na porta 3004, tentar conectar às portas 3003 e 3005
+	// Se estamos na porta 3005, tentar conectar às portas 3003 e 3004
+
+	var targetPorts []int
+	switch n.port {
+	case 3003:
+		targetPorts = []int{3004, 3005}
+	case 3004:
+		targetPorts = []int{3003, 3005}
+	case 3005:
+		targetPorts = []int{3003, 3004}
+	default:
+		// Para outras portas, tentar as portas padrão
+		targetPorts = []int{3003, 3004, 3005}
+	}
+
+	// Tentar conectar a cada porta alvo
+	for _, targetPort := range targetPorts {
+		if targetPort != n.port { // Não conectar a si mesmo
+			go func(port int) {
+				// Aguardar um pouco antes de tentar conectar
+				time.Sleep(2 * time.Second)
+
+				// Tentar conectar usando o método melhorado
+				if err := n.ConnectToLocalPeer(port); err != nil {
+					n.logger("⚠️ Falha ao conectar ao peer na porta %d: %v", port, err)
+				} else {
+					n.logger("✅ Conectado ao peer na porta %d", port)
+				}
+			}(targetPort)
+		}
+	}
+}
+
+// connectToPeerByID tenta conectar a um peer pelo ID
+func (n *P2PNetwork) connectToPeerByID(peerID string) error {
+	// Para peers locais, tentar conectar usando endereços padrão
+	localAddresses := []string{
+		fmt.Sprintf("/ip4/127.0.0.1/tcp/3003/p2p/%s", peerID),
+		fmt.Sprintf("/ip4/127.0.0.1/tcp/3004/p2p/%s", peerID),
+		fmt.Sprintf("/ip4/127.0.0.1/tcp/3005/p2p/%s", peerID),
+	}
+
+	for _, addr := range localAddresses {
+		if err := n.Connect(addr); err == nil {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("não foi possível conectar ao peer %s", peerID)
+}
+
+// GetConnectedPeers retorna lista de peers conectados
+func (n *P2PNetwork) GetConnectedPeers() []PeerInfo {
+	n.peersMutex.RLock()
+	defer n.peersMutex.RUnlock()
+
+	peers := make([]PeerInfo, 0, len(n.peers))
+	for _, peer := range n.peers {
+		peer.Connected = true
+		peers = append(peers, *peer)
+	}
+
+	return peers
+}
+
+// GetKnownPeers retorna lista de peers conhecidos
+func (n *P2PNetwork) GetKnownPeers() []string {
+	n.knownPeersMutex.RLock()
+	defer n.knownPeersMutex.RUnlock()
+
+	peers := make([]string, 0, len(n.knownPeers))
+	for peer := range n.knownPeers {
+		peers = append(peers, peer)
+	}
+
+	return peers
+}
+
+// ConnectToPeer conecta a um peer específico
+func (n *P2PNetwork) ConnectToPeer(peerAddr string) error {
+	n.logger("🔗 Conectando manualmente ao peer: %s", peerAddr)
+	return n.Connect(peerAddr)
+}
+
+// ConnectToLocalPeer conecta a um peer local pela porta
+func (n *P2PNetwork) ConnectToLocalPeer(port int) error {
+	// Para conectar a um peer local, precisamos descobrir seu ID primeiro
+	// Vamos tentar conectar usando o endereço básico e ver se conseguimos descobrir o peer
+
+	n.logger("🔗 Tentando conectar ao peer local na porta %d", port)
+
+	// Primeiro, tentar conectar usando o endereço básico
+	peerAddr := fmt.Sprintf("/ip4/127.0.0.1/tcp/%d", port)
+
+	// Tentar conectar
+	if err := n.Connect(peerAddr); err != nil {
+		n.logger("⚠️ Falha ao conectar usando endereço básico: %v", err)
+
+		// Se falhar, tentar descobrir o peer usando mDNS ou outros métodos
+		// Por enquanto, vamos tentar conectar usando um ID conhecido se disponível
+		return n.tryConnectWithKnownPeerID(port)
+	}
+
+	n.logger("✅ Conectado ao peer local na porta %d", port)
+	return nil
+}
+
+// tryConnectWithKnownPeerID tenta conectar usando IDs de peers conhecidos
+func (n *P2PNetwork) tryConnectWithKnownPeerID(port int) error {
+	// Primeiro, tentar descobrir o ID do peer dinamicamente
+	if peerID, err := n.discoverPeerID(port); err == nil {
+		// Tentar conectar usando o ID descoberto
+		peerAddr := fmt.Sprintf("/ip4/127.0.0.1/tcp/%d/p2p/%s", port, peerID)
+		n.logger("🔗 Tentando conectar usando ID descoberto: %s", peerAddr)
+
+		if err := n.Connect(peerAddr); err != nil {
+			n.logger("⚠️ Falha ao conectar usando ID descoberto: %v", err)
+			return err
+		}
+
+		n.logger("✅ Conectado ao peer usando ID descoberto na porta %d", port)
+		return nil
+	}
+
+	// Se não conseguir descobrir, tentar com IDs conhecidos
+	knownPeerIDs := map[int]string{
+		3003: "12D3KooWFrCqre68gmYp3nQyPRuWgh7tT8STQkChfYg56kcLu9BU",
+		3004: "12D3KooWPMVcKNKkZKQ714vpUq8FcsPcL49vuJmozEuS4LPTRh1P",
+		3005: "12D3KooWQU5YR6bmHydwN7mggKmJLVDweLHZvf8f9HeWHuHEGEjg",
+	}
+
+	if peerID, exists := knownPeerIDs[port]; exists {
+		// Tentar conectar usando o ID conhecido
+		peerAddr := fmt.Sprintf("/ip4/127.0.0.1/tcp/%d/p2p/%s", port, peerID)
+		n.logger("🔗 Tentando conectar usando ID conhecido: %s", peerAddr)
+
+		if err := n.Connect(peerAddr); err != nil {
+			n.logger("⚠️ Falha ao conectar usando ID conhecido: %v", err)
+			return err
+		}
+
+		n.logger("✅ Conectado ao peer usando ID conhecido na porta %d", port)
+		return nil
+	}
+
+	return fmt.Errorf("não foi possível conectar ao peer na porta %d - ID desconhecido", port)
+}
+
+// discoverPeerID tenta descobrir o ID do peer fazendo uma requisição HTTP
+func (n *P2PNetwork) discoverPeerID(port int) (string, error) {
+	// Calcular a porta HTTP correspondente corretamente
+	// Mapeamento: P2P 3003 -> HTTP 8081, P2P 3004 -> HTTP 8082, P2P 3005 -> HTTP 8083
+	var httpPort int
+	switch port {
+	case 3003:
+		httpPort = 8081
+	case 3004:
+		httpPort = 8082
+	case 3005:
+		httpPort = 8083
+	default:
+		// Para outras portas, tentar o cálculo anterior
+		httpPort = port + 8078
+	}
+
+	// Tentar fazer uma requisição HTTP para obter o status P2P
+	url := fmt.Sprintf("http://localhost:%d/api/p2p-status", httpPort)
+
+	// Fazer requisição HTTP com timeout
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	resp, err := client.Get(url)
+	if err != nil {
+		return "", fmt.Errorf("falha ao conectar ao peer HTTP: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("status HTTP inválido: %d", resp.StatusCode)
+	}
+
+	// Ler resposta
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("falha ao ler resposta: %v", err)
+	}
+
+	// Parsear JSON para extrair o node_id
+	var p2pStatus map[string]interface{}
+	if err := json.Unmarshal(body, &p2pStatus); err != nil {
+		return "", fmt.Errorf("falha ao parsear JSON: %v", err)
+	}
+
+	// Extrair node_id do network_info
+	if networkInfo, ok := p2pStatus["network_info"].(map[string]interface{}); ok {
+		if nodeID, ok := networkInfo["node_id"].(string); ok {
+			n.logger("🔍 ID do peer descoberto na porta %d: %s", port, nodeID)
+			return nodeID, nil
+		}
+	}
+
+	return "", fmt.Errorf("não foi possível extrair node_id da resposta")
+}
+
+// discoverPeerIDRealTime descobre o ID do peer em tempo real e conecta
+func (n *P2PNetwork) discoverPeerIDRealTime(port int) error {
+	n.logger("🔍 Descobrindo ID do peer em tempo real na porta %d...", port)
+
+	// Tentar descobrir o ID do peer
+	peerID, err := n.discoverPeerID(port)
+	if err != nil {
+		n.logger("⚠️ Falha ao descobrir ID do peer na porta %d: %v", port, err)
+		return err
+	}
+
+	// Tentar conectar usando o ID descoberto
+	peerAddr := fmt.Sprintf("/ip4/127.0.0.1/tcp/%d/p2p/%s", port, peerID)
+	n.logger("🔗 Conectando usando ID descoberto em tempo real: %s", peerAddr)
+
+	if err := n.Connect(peerAddr); err != nil {
+		n.logger("⚠️ Falha ao conectar usando ID descoberto: %v", err)
+		return err
+	}
+
+	n.logger("✅ Conectado ao peer usando ID descoberto em tempo real na porta %d", port)
+	return nil
+}
+
+// ConnectToPeerByPort conecta a um peer pela porta usando descoberta dinâmica
+func (n *P2PNetwork) ConnectToPeerByPort(port int) error {
+	n.logger("🔗 Conectando ao peer na porta %d usando descoberta dinâmica...", port)
+
+	// Primeiro tentar descoberta em tempo real
+	if err := n.discoverPeerIDRealTime(port); err == nil {
+		return nil
+	}
+
+	// Se falhar, tentar métodos alternativos
+	n.logger("⚠️ Descoberta em tempo real falhou, tentando métodos alternativos...")
+
+	// Tentar conectar usando o método melhorado
+	return n.ConnectToLocalPeer(port)
+}
+
+// GetConnectionStatus retorna o status das conexões
+func (n *P2PNetwork) GetConnectionStatus() map[string]interface{} {
+	n.peersMutex.RLock()
+	defer n.peersMutex.RUnlock()
+
+	status := map[string]interface{}{
+		"connected_peers": len(n.peers),
+		"known_peers":     len(n.knownPeers),
+		"port":            n.port,
+		"node_id":         n.host.ID().String(),
+	}
+
+	// Adicionar lista de peers conectados
+	connectedPeers := make([]string, 0, len(n.peers))
+	for peerID := range n.peers {
+		connectedPeers = append(connectedPeers, peerID.String())
+	}
+	status["peer_list"] = connectedPeers
+
+	return status
+}

@@ -1,0 +1,129 @@
+/* 🎨 ORDM Blockchain 2-Layer - Matrix Theme */
+/* Design System para Interface Terminal Matrix */
+
+:root {
+  /* 🎨 Cores Principais Matrix */
+  --matrix-bg: #0a0a0a;
+  --matrix-bg-secondary: #111111;
+  --matrix-bg-tertiary: #1a1a1a;
+  
+  /* 🎨 Cores de Texto */
+  --matrix-text: #00ff00;
+  --matrix-text-secondary: #00cc00;
+  --matrix-text-muted: #008800;
+  --matrix-text-dim: #004400;
+  
+  /* 🎨 Cores de Destaque */
+  --matrix-accent: #00ff00;
+  --matrix-accent-secondary: #00cc00;
+  --matrix-accent-tertiary: #009900;
+  
+  /* 🎨 Cores de Status */
+  --matrix-success: #00ff00;
+  --matrix-warning: #ffff00;
+  --matrix-error: #ff0000;
+  --matrix-info: #00ffff;
+  
+  /* 🎨 Cores de Interface */
+  --matrix-border: #333333;
+  --matrix-border-light: #555555;
+  --matrix-border-dark: #222222;
+  
+  /* 🎨 Efeitos de Glow */
+  --matrix-glow: rgba(0, 255, 0, 0.3);
+  --matrix-glow-strong: rgba(0, 255, 0, 0.5);
+  --matrix-glow-weak: rgba(0, 255, 0, 0.1);
+  
+  /* 🎨 Sombras */
+  --matrix-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+  --matrix-shadow-strong: 0 0 20px rgba(0, 255, 0, 0.4);
+  --matrix-shadow-inset: inset 0 0 10px rgba(0, 255, 0, 0.1);
+  
+  /* 🎨 Gradientes */
+  --matrix-gradient-primary: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+  --matrix-gradient-accent: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
+  --matrix-gradient-glow: linear-gradient(135deg, rgba(0, 255, 0, 0.1) 0%, rgba(0, 255, 0, 0.05) 100%);
+  
+  /* 🎨 Tipografia */
+  --matrix-font-family: 'Courier New', 'Monaco', 'Consolas', 'Lucida Console', monospace;
+  --matrix-font-size-small: 12px;
+  --matrix-font-size-base: 14px;
+  --matrix-font-size-large: 16px;
+  --matrix-font-size-xl: 18px;
+  --matrix-font-size-xxl: 24px;
+  --matrix-font-size-title: 32px;
+  
+  /* 🎨 Espaçamentos */
+  --matrix-spacing-xs: 4px;
+  --matrix-spacing-sm: 8px;
+  --matrix-spacing-md: 16px;
+  --matrix-spacing-lg: 24px;
+  --matrix-spacing-xl: 32px;
+  --matrix-spacing-xxl: 48px;
+  
+  /* 🎨 Bordas */
+  --matrix-border-radius-sm: 2px;
+  --matrix-border-radius-md: 4px;
+  --matrix-border-radius-lg: 8px;
+  --matrix-border-radius-xl: 12px;
+  
+  /* 🎨 Transições */
+  --matrix-transition-fast: 0.15s ease-in-out;
+  --matrix-transition-normal: 0.3s ease-in-out;
+  --matrix-transition-slow: 0.5s ease-in-out;
+  
+  /* 🎨 Z-Index */
+  --matrix-z-dropdown: 1000;
+  --matrix-z-modal: 2000;
+  --matrix-z-tooltip: 3000;
+  --matrix-z-notification: 4000;
+}
+
+/* 🎨 Reset e Base */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--matrix-bg);
+  color: var(--matrix-text);
+  font-family: var(--matrix-font-family);
+  font-size: var(--matrix-font-size-base);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* 🎨 Scrollbar Matrix */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--matrix-bg-secondary);
+  border-radius: var(--matrix-border-radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--matrix-border);
+  border-radius: var(--matrix-border-radius-sm);
+  box-shadow: var(--matrix-shadow);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--matrix-border-light);
+  box-shadow: var(--matrix-shadow-strong);
+}
+
+/* 🎨 Seleção de Texto */
+::selection {
+  background: var(--matrix-accent);
+  color: var(--matrix-bg);
+}
+
+::-moz-selection {
+  background: var(--matrix-accent);
+  color: var(--matrix-bg);
+}

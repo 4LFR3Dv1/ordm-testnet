@@ -1,0 +1,343 @@
+/* 🎬 ORDM Matrix Animation System */
+
+/* 🎨 Keyframes Principais */
+@keyframes matrix-glow {
+  0% { 
+    box-shadow: 0 0 5px var(--matrix-glow);
+    text-shadow: 0 0 5px var(--matrix-glow);
+  }
+  50% { 
+    box-shadow: 0 0 20px var(--matrix-glow-strong);
+    text-shadow: 0 0 15px var(--matrix-glow-strong);
+  }
+  100% { 
+    box-shadow: 0 0 5px var(--matrix-glow);
+    text-shadow: 0 0 5px var(--matrix-glow);
+  }
+}
+
+@keyframes matrix-text-pulse {
+  0% { 
+    opacity: 0.8;
+    text-shadow: 0 0 5px var(--matrix-glow);
+  }
+  50% { 
+    opacity: 1;
+    text-shadow: 0 0 15px var(--matrix-glow-strong);
+  }
+  100% { 
+    opacity: 0.8;
+    text-shadow: 0 0 5px var(--matrix-glow);
+  }
+}
+
+@keyframes matrix-text-flicker {
+  0%, 100% { 
+    opacity: 1;
+    text-shadow: 0 0 5px var(--matrix-glow);
+  }
+  10% { 
+    opacity: 0.8;
+    text-shadow: 0 0 3px var(--matrix-glow-weak);
+  }
+  20% { 
+    opacity: 1;
+    text-shadow: 0 0 8px var(--matrix-glow);
+  }
+  30% { 
+    opacity: 0.9;
+    text-shadow: 0 0 5px var(--matrix-glow);
+  }
+  40% { 
+    opacity: 1;
+    text-shadow: 0 0 12px var(--matrix-glow-strong);
+  }
+  50% { 
+    opacity: 0.7;
+    text-shadow: 0 0 2px var(--matrix-glow-weak);
+  }
+  60% { 
+    opacity: 1;
+    text-shadow: 0 0 10px var(--matrix-glow);
+  }
+  70% { 
+    opacity: 0.9;
+    text-shadow: 0 0 6px var(--matrix-glow);
+  }
+  80% { 
+    opacity: 1;
+    text-shadow: 0 0 14px var(--matrix-glow-strong);
+  }
+  90% { 
+    opacity: 0.8;
+    text-shadow: 0 0 4px var(--matrix-glow);
+  }
+}
+
+@keyframes matrix-typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes matrix-blink-caret {
+  from, to { border-color: transparent; }
+  50% { border-color: var(--matrix-accent); }
+}
+
+@keyframes matrix-fade-in {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes matrix-fade-out {
+  from { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to { 
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes matrix-slide-in-left {
+  from { 
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes matrix-slide-in-right {
+  from { 
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes matrix-scale-in {
+  from { 
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes matrix-rotate-in {
+  from { 
+    opacity: 0;
+    transform: rotate(-180deg) scale(0.5);
+  }
+  to { 
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+@keyframes matrix-bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40%, 43% {
+    transform: translateY(-10px);
+  }
+  70% {
+    transform: translateY(-5px);
+  }
+  90% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes matrix-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes matrix-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes matrix-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 5px var(--matrix-glow);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px var(--matrix-glow-strong);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 5px var(--matrix-glow);
+  }
+}
+
+/* 🎨 Classes de Animação */
+.matrix-animate-glow {
+  animation: matrix-glow 2s ease-in-out infinite;
+}
+
+.matrix-animate-pulse {
+  animation: matrix-pulse 2s ease-in-out infinite;
+}
+
+.matrix-animate-bounce {
+  animation: matrix-bounce 1s ease-in-out;
+}
+
+.matrix-animate-shake {
+  animation: matrix-shake 0.5s ease-in-out;
+}
+
+.matrix-animate-spin {
+  animation: matrix-spin 1s linear infinite;
+}
+
+.matrix-animate-fade-in {
+  animation: matrix-fade-in 0.5s ease-out;
+}
+
+.matrix-animate-fade-out {
+  animation: matrix-fade-out 0.5s ease-in;
+}
+
+.matrix-animate-slide-in-left {
+  animation: matrix-slide-in-left 0.5s ease-out;
+}
+
+.matrix-animate-slide-in-right {
+  animation: matrix-slide-in-right 0.5s ease-out;
+}
+
+.matrix-animate-scale-in {
+  animation: matrix-scale-in 0.3s ease-out;
+}
+
+.matrix-animate-rotate-in {
+  animation: matrix-rotate-in 0.6s ease-out;
+}
+
+/* 🎨 Delays de Animação */
+.matrix-delay-1 { animation-delay: 0.1s; }
+.matrix-delay-2 { animation-delay: 0.2s; }
+.matrix-delay-3 { animation-delay: 0.3s; }
+.matrix-delay-4 { animation-delay: 0.4s; }
+.matrix-delay-5 { animation-delay: 0.5s; }
+
+/* 🎨 Durações de Animação */
+.matrix-duration-fast { animation-duration: 0.2s; }
+.matrix-duration-normal { animation-duration: 0.5s; }
+.matrix-duration-slow { animation-duration: 1s; }
+.matrix-duration-slower { animation-duration: 2s; }
+
+/* 🎨 Estados de Hover */
+.matrix-hover-glow:hover {
+  animation: matrix-glow 1s ease-in-out infinite;
+}
+
+.matrix-hover-pulse:hover {
+  animation: matrix-pulse 1s ease-in-out infinite;
+}
+
+.matrix-hover-scale:hover {
+  transform: scale(1.05);
+  transition: transform var(--matrix-transition-fast);
+}
+
+.matrix-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--matrix-shadow-strong);
+  transition: all var(--matrix-transition-fast);
+}
+
+/* 🎨 Estados de Loading */
+.matrix-loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.matrix-loading::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--matrix-glow), transparent);
+  animation: matrix-loading-shimmer 1.5s infinite;
+}
+
+@keyframes matrix-loading-shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* 🎨 Estados de Focus */
+.matrix-focus-glow:focus {
+  outline: none;
+  box-shadow: 0 0 15px var(--matrix-glow-strong);
+  animation: matrix-glow 1s ease-in-out infinite;
+}
+
+/* 🎨 Estados de Active */
+.matrix-active-press:active {
+  transform: scale(0.95);
+  transition: transform var(--matrix-transition-fast);
+}
+
+/* 🎨 Estados de Disabled */
+.matrix-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  filter: grayscale(100%);
+}
+
+/* 🎨 Transições Suaves */
+.matrix-transition-all {
+  transition: all var(--matrix-transition-normal);
+}
+
+.matrix-transition-color {
+  transition: color var(--matrix-transition-fast), text-shadow var(--matrix-transition-fast);
+}
+
+.matrix-transition-transform {
+  transition: transform var(--matrix-transition-fast);
+}
+
+.matrix-transition-opacity {
+  transition: opacity var(--matrix-transition-fast);
+}
+
+.matrix-transition-shadow {
+  transition: box-shadow var(--matrix-transition-fast);
+}

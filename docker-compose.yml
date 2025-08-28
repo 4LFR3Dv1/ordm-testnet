@@ -1,0 +1,208 @@
+version: '3.8'
+
+# 🏭 ORDM Blockchain - Ambiente Distribuído para Testes de Resiliência
+# Este arquivo cria um ambiente com múltiplos mineradores para testar:
+# - Conectividade P2P
+# - Propagação de blocos
+# - Sincronização automática
+# - Recuperação de falhas
+# - Consenso e forks
+
+services:
+  # 🌐 Minerador 1 - Node Principal
+  miner-1:
+    build: .
+    container_name: ordm-miner-1
+    ports:
+      - "8081:8081"  # API HTTP
+      - "3003:3003"  # P2P Network
+    environment:
+      - PORT=8081
+      - P2P_PORT=3003
+      - DATA_DIR=/app/data
+      - MINER_ID=miner_docker_1
+    volumes:
+      - miner-1-data:/app/data
+      - ./logs:/app/logs
+    command: ["./blockchain-miner", "-port", "8081", "-p2p-port", "3003"]
+    networks:
+      - ordm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/api/stats"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # 🌐 Minerador 2 - Node Secundário
+  miner-2:
+    build: .
+    container_name: ordm-miner-2
+    ports:
+      - "8082:8082"  # API HTTP
+      - "3004:3004"  # P2P Network
+    environment:
+      - PORT=8082
+      - P2P_PORT=3004
+      - DATA_DIR=/app/data
+      - MINER_ID=miner_docker_2
+    volumes:
+      - miner-2-data:/app/data
+      - ./logs:/app/logs
+    command: ["./blockchain-miner", "-port", "8082", "-p2p-port", "3004"]
+    networks:
+      - ordm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8082/api/stats"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    depends_on:
+      - miner-1
+
+  # 🌐 Minerador 3 - Node Terciário
+  miner-3:
+    build: .
+    container_name: ordm-miner-3
+    ports:
+      - "8083:8083"  # API HTTP
+      - "3005:3005"  # P2P Network
+    environment:
+      - PORT=8083
+      - P2P_PORT=3005
+      - DATA_DIR=/app/data
+      - MINER_ID=miner_docker_3
+    volumes:
+      - miner-3-data:/app/data
+      - ./logs:/app/logs
+    command: ["./blockchain-miner", "-port", "8083", "-p2p-port", "3005"]
+    networks:
+      - ordm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8083/api/stats"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    depends_on:
+      - miner-1
+      - miner-2
+
+  # 🌐 Minerador 4 - Node de Teste (para simular falhas)
+  miner-4:
+    build: .
+    container_name: ordm-miner-4
+    ports:
+      - "8084:8084"  # API HTTP
+      - "3006:3006"  # P2P Network
+    environment:
+      - PORT=8084
+      - P2P_PORT=3006
+      - DATA_DIR=/app/data
+      - MINER_ID=miner_docker_4
+    volumes:
+      - miner-4-data:/app/data
+      - ./logs:/app/logs
+    command: ["./blockchain-miner", "-port", "8084", "-p2p-port", "3006"]
+    networks:
+      - ordm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8084/api/stats"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    depends_on:
+      - miner-1
+      - miner-2
+      - miner-3
+
+  # 🌐 Minerador 5 - Node de Backup
+  miner-5:
+    build: .
+    container_name: ordm-miner-5
+    ports:
+      - "8085:8085"  # API HTTP
+      - "3007:3007"  # P2P Network
+    environment:
+      - PORT=8085
+      - P2P_PORT=3007
+      - DATA_DIR=/app/data
+      - MINER_ID=miner_docker_5
+    volumes:
+      - miner-5-data:/app/data
+      - ./logs:/app/logs
+    command: ["./blockchain-miner", "-port", "8085", "-p2p-port", "3007"]
+    networks:
+      - ordm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8085/api/stats"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    depends_on:
+      - miner-1
+      - miner-2
+      - miner-3
+      - miner-4
+
+  # 📊 Monitor - Dashboard para acompanhar o estado da rede
+  monitor:
+    build: .
+    container_name: ordm-monitor
+    ports:
+      - "8080:8080"  # Dashboard HTTP
+    environment:
+      - PORT=8080
+      - P2P_PORT=3008
+      - DATA_DIR=/app/data
+      - MINER_ID=monitor_docker
+    volumes:
+      - monitor-data:/app/data
+      - ./logs:/app/logs
+    command: ["./blockchain-miner", "-port", "8080", "-p2p-port", "3008", "-monitor-mode"]
+    networks:
+      - ordm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/stats"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    depends_on:
+      - miner-1
+      - miner-2
+      - miner-3
+      - miner-4
+      - miner-5
+
+# Volumes para persistência de dados
+volumes:
+  miner-1-data:
+    driver: local
+  miner-2-data:
+    driver: local
+  miner-3-data:
+    driver: local
+  miner-4-data:
+    driver: local
+  miner-5-data:
+    driver: local
+  monitor-data:
+    driver: local
+
+# Rede dedicada para comunicação entre mineradores
+networks:
+  ordm-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

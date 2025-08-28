@@ -48,6 +48,37 @@ target/
 .env.local
 .env.production
 
+# 🔐 Arquivos de Segurança
+*.key
+*.pem
+*.crt
+machine_id.json
+backup/
+
+# 📁 Dados de Desenvolvimento
+offline_data/
+test-data/
+
+# 🧪 Arquivos de Teste
+test-build/
+test-resilience/
+cookies.txt
+
+# 🚀 Executáveis
+ordmd
+ordm-miner-cli
+ordm-offline-miner
+main
+offline_miner
+
+# 📊 Relatórios Temporários
+*.md.bak
+*.txt.bak
+
+# 🔧 Configurações Locais
+config/local.json
+config/dev.json
+
 # Arquivos de cache
 .cache/
 *.cache
