@@ -1,5 +1,4 @@
 services:
-  # Serviço principal da testnet (único serviço)
   - type: web
     name: ordm-testnet
     env: go
@@ -7,13 +6,6 @@ services:
     plan: starter
     goVersion: 1.25
     healthCheckPath: /api/v1/blockchain/info
-    # FORÇAR BUILD NATIVO - NÃO USAR DOCKER
-    buildFilter:
-      paths:
-        - "cmd/**/*.go"
-        - "pkg/**/*.go"
-        - "go.mod"
-        - "go.sum"
     envVars:
       - key: PORT
         value: 8081
@@ -27,30 +19,5 @@ services:
         value: 3000
       - key: BASE_URL
         value: https://ordm-testnet.onrender.com
-    # COMANDOS EXPLÍCITOS PARA BUILD NATIVO
-    buildCommand: |
-      echo "🚫 DOCKER DESABILITADO - BUILD NATIVO OBRIGATÓRIO"
-      echo "🔧 BUILD NATIVO ORDM BLOCKCHAIN"
-      echo "📋 Ambiente:"
-      go version
-      echo "📋 Diretório atual:"
-      pwd
-      echo "📋 Listando arquivos:"
-      ls -la
-      echo "📥 Dependências:"
-      go mod download
-      echo "🔨 Compilação:"
-      go build -v -o ordmd cmd/ordmd/main.go
-      echo "✅ SUCESSO!"
-      ls -la ordmd
-    startCommand: |
-      echo "🚀 ORDM BLOCKCHAIN INICIANDO"
-      echo "🌐 Network: testnet"
-      echo "🔌 Port: $PORT"
-      ./ordmd --mode both --rpc-port $PORT
-
-# Configuração alternativa para forçar build nativo
-builds:
-  - env: go
-    goVersion: 1.25
     buildCommand: go build -o ordmd cmd/ordmd/main.go
+    startCommand: ./ordmd --mode both --rpc-port $PORT
